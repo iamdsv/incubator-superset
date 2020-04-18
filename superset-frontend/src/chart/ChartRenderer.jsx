@@ -163,7 +163,7 @@ class ChartRenderer extends React.Component {
       chartId,
       refreshOverlayVisible,
     } = this.props;
-
+    
     // Skip chart rendering
     if (
       refreshOverlayVisible ||

@@ -123,7 +123,6 @@ class ChangeDatasourceModal extends React.PureComponent {
   render() {
     const { datasources, filter, loading } = this.state;
     const { show, onHide } = this.props;
-
     return (
       <Modal
         show={show}

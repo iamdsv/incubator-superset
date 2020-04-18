@@ -17,6 +17,7 @@
 import os
 import tempfile
 from typing import TYPE_CHECKING
+import shutil
 
 from flask import flash, g, redirect
 from flask_appbuilder import SimpleFormView
@@ -68,7 +69,9 @@ def upload_stream_write(form_file_field: "FileStorage", path: str):
         while True:
             chunk = form_file_field.stream.read(chunk_size)
             if not chunk:
+                print("--NO--")
                 break
+            print("--Hi--\n")
             file_description.write(chunk)
 
 
@@ -110,7 +113,6 @@ class CsvToDatabaseView(SimpleFormView):
     def form_post(self, form):
         database = form.con.data
         schema_name = form.schema.data or ""
-
         if not schema_allows_csv_upload(database, schema_name):
             message = _(
                 'Database "%(database_name)s" schema "%(schema_name)s" '
@@ -126,11 +128,14 @@ class CsvToDatabaseView(SimpleFormView):
         path = tempfile.NamedTemporaryFile(
             dir=app.config["UPLOAD_FOLDER"], suffix=extension, delete=False
         ).name
+        save_path = app.config["SAVE_FOLDER"] + form.csv_file.data.filename
         form.csv_file.data.filename = path
 
         try:
             utils.ensure_path_exists(config["UPLOAD_FOLDER"])
             upload_stream_write(form.csv_file.data, path)
+            utils.ensure_path_exists(config["SAVE_FOLDER"])
+            shutil.copy(path, save_path)
             table_name = form.name.data
 
             con = form.data.get("con")

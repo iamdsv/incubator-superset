@@ -441,6 +441,12 @@ class SqlaTable(Model, BaseDatasource):
         return self.name
 
     @property
+    def generate_insights(self) -> str:
+        name = escape(self.name)
+        anchor = f'<a href="{"https://www.google.com"}"><i class="fa fa-bar-chart" aria-hidden="true"></i></a>'
+        return Markup(anchor)
+
+    @property
     def changed_by_name(self) -> str:
         if not self.changed_by:
             return ""

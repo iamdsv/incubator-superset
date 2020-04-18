@@ -267,7 +267,7 @@ class TableModelView(DatasourceModelView, DeleteMixin, YamlExportMixin):
     add_title = _("Import a table definition")
     edit_title = _("Edit Table")
 
-    list_columns = ["link", "database_name", "changed_by_", "modified"]
+    list_columns = ["link", "generate_insights" ,"database_name", "changed_by_", "modified"]
     order_columns = ["modified"]
     add_columns = ["database", "schema", "table_name"]
     edit_columns = [
@@ -350,6 +350,7 @@ class TableModelView(DatasourceModelView, DeleteMixin, YamlExportMixin):
         "slices": _("Associated Charts"),
         "link": _("Table"),
         "changed_by_": _("Changed By"),
+        "generate_insights": _("Generate Insights"),
         "database": _("Database"),
         "database_name": _("Database"),
         "changed_on_": _("Last Changed"),
