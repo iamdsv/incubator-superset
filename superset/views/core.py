@@ -1042,10 +1042,10 @@ class Superset(BaseSupersetView):
         if request.args.get("goto_dash") == "true":
             response.update({"dashboard": dash.url})
 
-        if custom_create == False:
-            return json_success(json.dumps(response))
-        else:
+        if custom_create == True:
             return redirect("/chart/list/")
+        else:
+            return json_success(json.dumps(response))
 
     def save_slice(self, slc):
         session = db.session()
