@@ -24,7 +24,7 @@ from typing import Any, Dict, Hashable, List, NamedTuple, Optional, Tuple, Union
 import pandas as pd
 import sqlalchemy as sa
 import sqlparse
-from flask import escape, Markup
+from flask import escape, Markup, render_template, redirect
 from flask_appbuilder import Model
 from flask_babel import lazy_gettext as _
 from sqlalchemy import (
@@ -59,6 +59,7 @@ from superset.models.annotations import Annotation
 from superset.models.core import Database
 from superset.models.helpers import AuditMixinNullable, QueryResult
 from superset.utils import core as utils, import_datasource
+from superset.Insights.generate_insights import generate_insights
 
 config = app.config
 metadata = Model.metadata  # pylint: disable=no-member
@@ -406,6 +407,7 @@ class SqlaTable(Model, BaseDatasource):
         "filter_select_enabled",
         "fetch_values_predicate",
     ]
+    
     update_from_object_fields = [
         f for f in export_fields if f not in ("table_name", "database_id")
     ]
@@ -440,12 +442,22 @@ class SqlaTable(Model, BaseDatasource):
     def __repr__(self):
         return self.name
 
+    @app.route('/generateInsights/<filename>')
+    def callGenInsights(filename):
+        full_filepath = config['SAVE_FOLDER'] + filename + '.csv'
+        return render_template(generate_insights(full_filepath))
+
+    @app.route('/testSliceAdder')
+    def testSliceAdder():
+        url = "http://localhost:8088/superset/explore/?form_data=%7B%22datasource%22%3A%2213__table%22%2C%22viz_type%22%3A%22dist_bar%22%2C%22slice_id%22%3A87%2C%22url_params%22%3A%7B%7D%2C%22time_range_endpoints%22%3A%5B%22inclusive%22%2C%22exclusive%22%5D%2C%22granularity_sqla%22%3Anull%2C%22time_range%22%3A%22Last%20week%22%2C%22metrics%22%3A%5B%7B%22aggregate%22%3Anull%2C%22column%22%3Anull%2C%22expressionType%22%3A%22SQL%22%2C%22fromFormData%22%3Atrue%2C%22hasCustomLabel%22%3Afalse%2C%22label%22%3A%22AVG(%5C%22Sales%5C%22)%22%2C%22optionName%22%3A%22metric_0ne44jc4tvyo_yg5nrtsz01l%22%2C%22sqlExpression%22%3A%22AVG(%5C%22Sales%5C%22)%22%7D%5D%2C%22adhoc_filters%22%3A%5B%5D%2C%22groupby%22%3A%5B%22Year%22%5D%2C%22columns%22%3A%5B%5D%2C%22row_limit%22%3A10000%2C%22contribution%22%3Afalse%2C%22color_scheme%22%3A%22bnbColors%22%2C%22label_colors%22%3A%7B%7D%2C%22show_legend%22%3Atrue%2C%22show_bar_value%22%3Afalse%2C%22bar_stacked%22%3Afalse%2C%22order_bars%22%3Afalse%2C%22y_axis_format%22%3A%22SMART_NUMBER%22%2C%22y_axis_label%22%3A%22%22%2C%22show_controls%22%3Afalse%2C%22x_axis_label%22%3A%22%22%2C%22bottom_margin%22%3A%22auto%22%2C%22x_ticks_layout%22%3A%22auto%22%2C%22reduce_x_ticks%22%3Afalse%7D&action=saveas&slice_id=87&slice_name=Test+Chart&add_to_dash=noSave&goto_dash=false&custom_create=true"
+        return redirect(url)
+        
     @property
     def generate_insights(self) -> str:
         name = escape(self.name)
-        anchor = f'<a href="{"https://www.google.com"}"><i class="fa fa-bar-chart" aria-hidden="true"></i></a>'
+        anchor = f'<a href="{"/generateInsights/" + name}"><i class="fa fa-bar-chart" aria-hidden="true"></i></a>'
         return Markup(anchor)
-
+        
     @property
     def changed_by_name(self) -> str:
         if not self.changed_by:

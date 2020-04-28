@@ -69,9 +69,7 @@ def upload_stream_write(form_file_field: "FileStorage", path: str):
         while True:
             chunk = form_file_field.stream.read(chunk_size)
             if not chunk:
-                print("--NO--")
                 break
-            print("--Hi--\n")
             file_description.write(chunk)
 
 

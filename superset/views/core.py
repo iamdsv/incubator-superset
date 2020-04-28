@@ -761,7 +761,7 @@ class Superset(BaseSupersetView):
     def explore(self, datasource_type=None, datasource_id=None):
         user_id = g.user.get_id() if g.user else None
         form_data, slc = get_form_data(use_slice_data=True)
-
+        
         # Flash the SIP-15 message if the slice is owned by the current user and has not
         # been updated, i.e., is not using the [start, end) interval.
         if (
@@ -856,7 +856,7 @@ class Superset(BaseSupersetView):
                 _("You don't have the rights to ") + _("create a ") + _("chart"),
                 status=400,
             )
-
+        custom_create = request.args.get("custom_create")
         if action in ("saveas", "overwrite"):
             return self.save_or_overwrite_slice(
                 request.args,
@@ -867,6 +867,7 @@ class Superset(BaseSupersetView):
                 datasource_id,
                 datasource_type,
                 datasource.name,
+                custom_create
             )
 
         standalone = (
@@ -895,15 +896,19 @@ class Superset(BaseSupersetView):
             title = slc.slice_name
         else:
             title = _("Explore - %(table)s", table=table_name)
-        return self.render_template(
-            "superset/basic.html",
-            bootstrap_data=json.dumps(
-                bootstrap_data, default=utils.pessimistic_json_iso_dttm_ser
-            ),
-            entry="explore",
-            title=title,
-            standalone_mode=standalone,
-        )
+        
+        if custom_create is None:
+            return self.render_template(
+                "superset/basic.html",
+                bootstrap_data=json.dumps(
+                    bootstrap_data, default=utils.pessimistic_json_iso_dttm_ser
+                ),
+                entry="explore",
+                title=title,
+                standalone_mode=standalone,
+            )
+        else:
+            return redirect("/chart/list")
 
     @api
     @handle_api_exception
@@ -947,6 +952,7 @@ class Superset(BaseSupersetView):
         datasource_id,
         datasource_type,
         datasource_name,
+        custom_create=False
     ):
         """Save or overwrite a slice"""
         slice_name = args.get("slice_name")
@@ -1036,7 +1042,10 @@ class Superset(BaseSupersetView):
         if request.args.get("goto_dash") == "true":
             response.update({"dashboard": dash.url})
 
-        return json_success(json.dumps(response))
+        if custom_create == False:
+            return json_success(json.dumps(response))
+        else:
+            return redirect("/chart/list/")
 
     def save_slice(self, slc):
         session = db.session()
