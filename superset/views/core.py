@@ -897,18 +897,15 @@ class Superset(BaseSupersetView):
         else:
             title = _("Explore - %(table)s", table=table_name)
         
-        if custom_create is None:
-            return self.render_template(
-                "superset/basic.html",
-                bootstrap_data=json.dumps(
-                    bootstrap_data, default=utils.pessimistic_json_iso_dttm_ser
-                ),
-                entry="explore",
-                title=title,
-                standalone_mode=standalone,
-            )
-        else:
-            return redirect("/chart/list")
+        return self.render_template(
+            "superset/basic.html",
+            bootstrap_data=json.dumps(
+                bootstrap_data, default=utils.pessimistic_json_iso_dttm_ser
+            ),
+            entry="explore",
+            title=title,
+            standalone_mode=standalone,
+        )
 
     @api
     @handle_api_exception
@@ -952,7 +949,7 @@ class Superset(BaseSupersetView):
         datasource_id,
         datasource_type,
         datasource_name,
-        custom_create=False
+        custom_create="No"
     ):
         """Save or overwrite a slice"""
         slice_name = args.get("slice_name")
@@ -1041,8 +1038,8 @@ class Superset(BaseSupersetView):
 
         if request.args.get("goto_dash") == "true":
             response.update({"dashboard": dash.url})
-
-        if custom_create == True:
+            
+        if custom_create == "Yes":
             return redirect("/chart/list/")
         else:
             return json_success(json.dumps(response))
