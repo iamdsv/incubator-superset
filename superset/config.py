@@ -328,6 +328,8 @@ UPLOAD_FOLDER = BASE_DIR + "/app/static/uploads/"
 SAVE_FOLDER = BASE_DIR + "/app/static/save/"
 UPLOAD_CHUNK_SIZE = 4096
 REPORT_SAVE = BASE_DIR + "/templates/"
+SAMPLE_JSON = BASE_DIR + "/Insights/sampleJSON/"
+GRAPH_CSS = BASE_DIR + "/Insights/css/"
 
 # The image upload folder, when using models with images
 IMG_UPLOAD_FOLDER = BASE_DIR + "/app/static/uploads/"

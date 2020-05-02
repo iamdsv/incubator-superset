@@ -1,0 +1,6 @@
+{
+	"categorical_attributes" : ["HighSchool GPA"],
+
+	"measure_attributes" : ["Physics Marks", "Chem Marks", "Biology Marks"]
+	
+}

@@ -1,0 +1,5 @@
+{
+	"categorical_attributes": ["State/UT","Year"],
+	"measure_attributes": ["No of Jobs"],
+	"time_attributes":["Year"]
+}

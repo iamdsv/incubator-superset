@@ -1,0 +1,43 @@
+{
+  "adhoc_filters": [
+  ],
+  "bar_stacked": false,
+  "bottom_margin": "auto",
+  "color_scheme": "bnbColors",
+  "columns": [],
+  "contribution": false,
+  "datasource": "13__table",
+  "granularity_sqla": null,
+  "groupby": [
+  ],
+  "label_colors": {},
+  "metrics": [
+    {
+      "aggregate": null,
+      "column": null,
+      "expressionType": "SQL",
+      "fromFormData": true,
+      "hasCustomLabel": false,
+      "label": "",
+      "optionName": "metric_0ne44jc4tvyo_yg5nrtsz01l",
+      "sqlExpression": ""
+    }
+  ],
+  "order_bars": false,
+  "reduce_x_ticks": false,
+  "row_limit": 10000,
+  "show_bar_value": false,
+  "show_controls": false,
+  "show_legend": true,
+  "time_range": "No filter",
+  "time_range_endpoints": [
+    "inclusive",
+    "exclusive"
+  ],
+  "url_params": {},
+  "viz_type": "dist_bar",
+  "x_axis_label": "",
+  "x_ticks_layout": "auto",
+  "y_axis_format": "SMART_NUMBER",
+  "y_axis_label": ""
+}

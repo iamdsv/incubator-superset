@@ -1,0 +1,10 @@
+{
+	"categorical_attributes" : ["Year","Term"],
+
+	"measure_attributes" : ["Remedial Number Successfully Completing Courses", "Remedial Total Enrollment", "Occupational/Workforce Number Successfully Completing Courses", "Occupational/Workforce Total Enrollment","Baccalaureate/Transfer Number Successfully Completing Courses", "Baccalaureate/Transfer Total Enrollment"],
+
+	"time_attributes": ["Year"],
+
+	"discarded_attributes" : ["Remedial Course Success Rate","Baccalaureate/Transfer Course Success Rate","Occupational/Workforce Course Success Rate"]
+}
+

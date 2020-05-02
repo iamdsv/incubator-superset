@@ -1,0 +1,8 @@
+{
+	"categorical_attributes" : ["State/UT","Year"],
+
+	"measure_attributes" :  ["Kms"],
+	
+	"time_attributes": ["Year"]	
+}
+	

@@ -1,0 +1,199 @@
+,India/States,Gender,Total,Area
+0,India *,Both,68.3,Both
+1,Andhra Pradesh,Both,69.0,Both
+2,Assam,Both,64.7,Both
+3,Bihar,Both,68.4,Both
+4,Chhattisgarh,Both,65.2,Both
+5,Delhi,Both,73.8,Both
+6,Gujarat,Both,69.1,Both
+7,Haryana,Both,69.1,Both
+8,Himachal Pradesh,Both,72.0,Both
+9,Jammu & Kashmir,Both,73.2,Both
+10,Jharkhand,Both,67.2,Both
+11,Karnataka,Both,69.0,Both
+12,Kerala,Both,75.2,Both
+13,Madhya Pradesh,Both,64.8,Both
+14,Maharashtra,Both,72.0,Both
+15,Odisha,Both,66.9,Both
+16,Punjab,Both,72.1,Both
+17,Rajasthan,Both,67.9,Both
+18,Tamil Nadu,Both,71.0,Both
+19,Uttar Pradesh,Both,64.5,Both
+20,Uttarakhand,Both,71.8,Both
+21,West Bengal,Both,70.5,Both
+22,India *,Males,66.9,Both
+23,Andhra Pradesh,Males,67.1,Both
+24,Assam,Males,63.5,Both
+25,Bihar,Males,68.5,Both
+26,Chhattisgarh,Males,63.6,Both
+27,Delhi,Males,72.5,Both
+28,Gujarat,Males,66.9,Both
+29,Haryana,Males,66.9,Both
+30,Himachal Pradesh,Males,69.1,Both
+31,Jammu & Kashmir,Males,71.2,Both
+32,Jharkhand,Males,67.0,Both
+33,Karnataka,Males,67.2,Both
+34,Kerala,Males,72.2,Both
+35,Madhya Pradesh,Males,63.2,Both
+36,Maharashtra,Males,70.3,Both
+37,Odisha,Males,65.6,Both
+38,Punjab,Males,70.3,Both
+39,Rajasthan,Males,65.7,Both
+40,Tamil Nadu,Males,69.1,Both
+41,Uttar Pradesh,Males,63.4,Both
+42,Uttarakhand,Males,68.9,Both
+43,West Bengal,Males,69.4,Both
+44,India *,Females,70.0,Both
+45,Andhra Pradesh,Females,71.2,Both
+46,Assam,Females,66.2,Both
+47,Bihar,Females,68.3,Both
+48,Chhattisgarh,Females,66.8,Both
+49,Delhi,Females,75.4,Both
+50,Gujarat,Females,71.6,Both
+51,Haryana,Females,71.9,Both
+52,Himachal Pradesh,Females,75.2,Both
+53,Jammu & Kashmir,Females,76.1,Both
+54,Jharkhand,Females,67.5,Both
+55,Karnataka,Females,70.9,Both
+56,Kerala,Females,78.2,Both
+57,Madhya Pradesh,Females,66.5,Both
+58,Maharashtra,Females,73.9,Both
+59,Odisha,Females,68.3,Both
+60,Punjab,Females,74.2,Both
+61,Rajasthan,Females,70.4,Both
+62,Tamil Nadu,Females,73.0,Both
+63,Uttar Pradesh,Females,65.6,Both
+64,Uttarakhand,Females,74.9,Both
+65,West Bengal,Females,71.8,Both
+66,India *,Both,67.1,Rural
+67,Andhra Pradesh,Both,67.6,Rural
+68,Assam,Both,63.7,Rural
+69,Bihar,Both,68.1,Rural
+70,Chhattisgarh,Both,64.5,Rural
+71,Delhi,Both,71.4,Rural
+72,Gujarat,Both,67.6,Rural
+73,Haryana,Both,68.2,Rural
+74,Himachal Pradesh,Both,71.6,Rural
+75,Jammu & Kashmir,Both,72.2,Rural
+76,Jharkhand,Both,66.3,Rural
+77,Karnataka,Both,67.4,Rural
+78,Kerala,Both,75.1,Rural
+79,Madhya Pradesh,Both,63.5,Rural
+80,Maharashtra,Both,70.7,Rural
+81,Odisha,Both,66.2,Rural
+82,Punjab,Both,70.8,Rural
+83,Rajasthan,Both,67.0,Rural
+84,Tamil Nadu,Both,69.5,Rural
+85,Uttar Pradesh,Both,63.6,Rural
+86,Uttarakhand,Both,71.1,Rural
+87,West Bengal,Both,69.6,Rural
+88,India *,Males,65.6,Rural
+89,Andhra Pradesh,Males,65.5,Rural
+90,Assam,Males,62.5,Rural
+91,Bihar,Males,68.2,Rural
+92,Chhattisgarh,Males,63.0,Rural
+93,Delhi,Males,69.5,Rural
+94,Gujarat,Males,64.8,Rural
+95,Haryana,Males,65.8,Rural
+96,Himachal Pradesh,Males,68.6,Rural
+97,Jammu & Kashmir,Males,70.4,Rural
+98,Jharkhand,Males,66.1,Rural
+99,Karnataka,Males,65.4,Rural
+100,Kerala,Males,71.9,Rural
+101,Madhya Pradesh,Males,62.0,Rural
+102,Maharashtra,Males,69.0,Rural
+103,Odisha,Males,64.9,Rural
+104,Punjab,Males,69.0,Rural
+105,Rajasthan,Males,64.6,Rural
+106,Tamil Nadu,Males,67.6,Rural
+107,Uttar Pradesh,Males,62.5,Rural
+108,Uttarakhand,Males,67.8,Rural
+109,West Bengal,Males,68.3,Rural
+110,India *,Females,68.7,Rural
+111,Andhra Pradesh,Females,69.9,Rural
+112,Assam,Females,65.2,Rural
+113,Bihar,Females,67.9,Rural
+114,Chhattisgarh,Females,65.9,Rural
+115,Delhi,Females,,Rural
+116,Gujarat,Females,70.8,Rural
+117,Haryana,Females,71.2,Rural
+118,Himachal Pradesh,Females,74.9,Rural
+119,Jammu & Kashmir,Females,74.9,Rural
+120,Jharkhand,Females,66.3,Rural
+121,Karnataka,Females,69.5,Rural
+122,Kerala,Females,78.4,Rural
+123,Madhya Pradesh,Females,65.4,Rural
+124,Maharashtra,Females,72.5,Rural
+125,Odisha,Females,67.7,Rural
+126,Punjab,Females,72.8,Rural
+127,Rajasthan,Females,69.8,Rural
+128,Tamil Nadu,Females,71.6,Rural
+129,Uttar Pradesh,Females,64.8,Rural
+130,Uttarakhand,Females,74.7,Rural
+131,West Bengal,Females,70.9,Rural
+132,India *,Both,71.9,Urban
+133,Andhra Pradesh,Both,72.7,Urban
+134,Assam,Both,71.5,Urban
+135,Bihar,Both,71.4,Urban
+136,Chhattisgarh,Both,68.6,Urban
+137,Delhi,Both,74.1,Urban
+138,Gujarat,Both,71.5,Urban
+139,Haryana,Both,71.1,Urban
+140,Himachal Pradesh,Both,76.8,Urban
+141,Jammu & Kashmir,Both,76.6,Urban
+142,Jharkhand,Both,71.7,Urban
+143,Karnataka,Both,72.0,Urban
+144,Kerala,Both,75.4,Urban
+145,Madhya Pradesh,Both,69.4,Urban
+146,Maharashtra,Both,73.9,Urban
+147,Odisha,Both,70.8,Urban
+148,Punjab,Both,74.1,Urban
+149,Rajasthan,Both,71.1,Urban
+150,Tamil Nadu,Both,72.8,Urban
+151,Uttar Pradesh,Both,68.1,Urban
+152,Uttarakhand,Both,74.1,Urban
+153,West Bengal,Both,72.7,Urban
+154,India *,Males,70.5,Urban
+155,Andhra Pradesh,Males,71.2,Urban
+156,Assam,Males,70.7,Urban
+157,Bihar,Males,71.1,Urban
+158,Chhattisgarh,Males,66.4,Urban
+159,Delhi,Males,72.8,Urban
+160,Gujarat,Males,70.1,Urban
+161,Haryana,Males,69.2,Urban
+162,Himachal Pradesh,Males,75.1,Urban
+163,Jammu & Kashmir,Males,73.9,Urban
+164,Jharkhand,Males,70.8,Urban
+165,Karnataka,Males,70.7,Urban
+166,Kerala,Males,72.9,Urban
+167,Madhya Pradesh,Males,67.7,Urban
+168,Maharashtra,Males,72.1,Urban
+169,Odisha,Males,69.7,Urban
+170,Punjab,Males,72.2,Urban
+171,Rajasthan,Males,69.5,Urban
+172,Tamil Nadu,Males,71.0,Urban
+173,Uttar Pradesh,Males,67.3,Urban
+174,Uttarakhand,Males,72.7,Urban
+175,West Bengal,Males,71.7,Urban
+176,India *,Females,73.5,Urban
+177,Andhra Pradesh,Females,74.4,Urban
+178,Assam,Females,72.7,Urban
+179,Bihar,Females,71.7,Urban
+180,Chhattisgarh,Females,71.0,Urban
+181,Delhi,Females,75.6,Urban
+182,Gujarat,Females,73.0,Urban
+183,Haryana,Females,73.3,Urban
+184,Himachal Pradesh,Females,79.4,Urban
+185,Jammu & Kashmir,Females,80.2,Urban
+186,Jharkhand,Females,72.6,Urban
+187,Karnataka,Females,73.5,Urban
+188,Kerala,Females,77.7,Urban
+189,Madhya Pradesh,Females,71.2,Urban
+190,Maharashtra,Females,75.8,Urban
+191,Odisha,Females,71.8,Urban
+192,Punjab,Females,76.5,Urban
+193,Rajasthan,Females,72.8,Urban
+194,Tamil Nadu,Females,74.7,Urban
+195,Uttar Pradesh,Females,68.8,Urban
+196,Uttarakhand,Females,75.5,Urban
+197,West Bengal,Females,73.9,Urban

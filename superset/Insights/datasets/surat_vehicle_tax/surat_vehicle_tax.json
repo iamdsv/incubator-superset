@@ -1,0 +1,9 @@
+{
+	"categorical_attributes" : ["VehicleTypeId","Year", "Month"],
+
+	"measure_attributes" :  ["Count","Amount"],
+
+	"discarded_attributes" : ["Description"],
+
+	"time_attribute": ["Year", "Month"]
+}

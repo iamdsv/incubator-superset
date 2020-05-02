@@ -1,0 +1,11 @@
+{
+      "clause": "WHERE",
+      "comparator": "Toyota",
+      "expressionType": "SIMPLE",
+      "filterOptionName": "filter_waqjs6e8tjc_5hcv111y514",
+      "fromFormData": true,
+      "isExtra": false,
+      "operator": "==",
+      "sqlExpression": null,
+      "subject": "Brand"
+}

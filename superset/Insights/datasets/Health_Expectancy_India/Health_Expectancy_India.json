@@ -1,0 +1,5 @@
+{
+	"categorical_attributes" : ["India/States","Gender", "Area"],
+
+	"measure_attributes" :  ["Total"]
+}

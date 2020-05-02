@@ -1,0 +1,7 @@
+{
+	"categorical_attributes" : ["State"],
+
+	"measure_attributes" :  ["Internet Usage Household", "Bachelors Degree or Up", "GDPpcGrowth", "unemployment", "Population", "FarmEmploy", "Forest&FishEmploy", "Mining Employ", "UtilitiesEmploy", "ConstructionEmploy", "ManufactureEmploy", "WholesaleTradeEmploy", "RetailTradeEmploy", "TransportEmploy", "InfoOther1", "InfoOther2", "InfoOther3", "ITEmploy1", "ITEmploy2", "InfoOther4", "FinanceInsuranceEmploy", "RealtyEmploy", "ProfTechEmploy", "ManagementEmploy", "AdminEmploy", "EducationEmploy", "HealthcareEmploy", "ArtsEmploy", "AccomFoodEmploy", "OtherEmploy", "GovernmentEmploy", "AvgWage", "PersonalIncomePC", "TaxesAll", "18YearsOlder", "White", "Black", "Other", "Hispanic", "LandArea", "PovertyRate","State", "Male", "Female", "21YearsOlder", "62YearsOlder", "65YearsOlder", "TwoOrMoreRace", "NativeAmeri", "Asian", "PacificIslander", "SalesTax"],
+
+	"discarded_attributes" : ["Remedial Course Success Rate","Baccalaureate/Transfer Course Success Rate","Occupational/Workforce Course Success Rate"]
+}

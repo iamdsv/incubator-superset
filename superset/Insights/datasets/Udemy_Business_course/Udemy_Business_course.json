@@ -1,0 +1,6 @@
+{
+	"categorical_attributes" : ["isPaid","instructionalLevel", "contentInfo"],
+
+	"measure_attributes" : ["price","numSubscribers","numReviews","numPublishedLectures"]
+	
+}

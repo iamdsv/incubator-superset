@@ -1,0 +1,30 @@
+CarSales
+Sale value of cards of different brands and categories over the years 
+
+Health_Expectancy_India
+Health Expectancy of Rural and Urban areas of both genders across different states 
+
+Job_placement_under_Deen_Dayal_Scheme
+Various state job placement details for the years under Deen Dayal Scheme
+
+2010_internet_data_usa
+2010 Intener data usage in USA with socio demographic factors 
+
+candidates-marks 
+Student marks from usa
+
+State_wise_road_constructed
+State wise road constructed in India across states and UT
+
+MW-FO-top20_contracts-29-Apr-2020
+Has only one value in the breakdown dimension
+
+surat_vehicle_tax
+Tax on vehicle data for the city of surat
+
+performance-metrics-city-colleges-of-chicago-course-success-rates-1
+Chicago colles performance metrics 
+
+
+Udemy_Business_course
+Udemy Business course data on number of subsribers, course content... 
