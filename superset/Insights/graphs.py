@@ -66,7 +66,7 @@ Format of result is
 #TODO: Add measure also as an return value
 11 - Measure
 """
-def generate_graphs(results,categorical_index,k,corr_fig,filename):
+def generate_graphs(results,categorical_index,k,corr_fig,filename, datasource_id):
     figures = []
     counter = 1
 
@@ -117,6 +117,7 @@ def generate_graphs(results,categorical_index,k,corr_fig,filename):
             else:
                 tempBarJSON = copy.deepcopy(sampleBarJSON)
                 if len(result[6]) == 1:
+                    tempBarJSON["datasource"] = str(datasource_id)
                     tempBarJSON["groupby"].append(str(result[2]))
                     tempBarJSON["metrics"][0]["sqlExpression"] = str(result[6][0][0]) + "(\"" + str(result[6][0][1]) + "\")"
                     tempBarJSON["metrics"][0]["label"] = str(result[6][0][0]) + "(\"" + str(result[6][0][1]) + "\")"

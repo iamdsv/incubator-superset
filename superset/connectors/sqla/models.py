@@ -445,8 +445,9 @@ class SqlaTable(Model, BaseDatasource):
 
     @app.route('/generateInsights/<filename>')
     def callGenInsights(filename):
+        datasource_id = form_data = request.args.get("datasource_id")
         full_filepath = config['SAVE_FOLDER'] + filename + '.csv'
-        return render_template(generate_insights(full_filepath))
+        return render_template(generate_insights(full_filepath, datasource_id))
     
     @app.route('/getInsights/<filename>')
     def getPrevInsights(filename):
@@ -464,11 +465,12 @@ class SqlaTable(Model, BaseDatasource):
     @property
     def generate_insights(self) -> str:
         name = escape(self.name)
+        datasource_id = str(self.id) + "__table"
         check_file = config['REPORT_SAVE'] + 'reports/' + name + "/" + name + '.html'
         anchor = ""
         if path.isfile(check_file):
-            anchor = f'<a href="{"/getInsights/" + name}"><i class="fa fa-file-archive-o" aria-hidden="true"></i></a>&nbsp;'
-        anchor = anchor + f'<a href="{"/generateInsights/" + name}"><i class="fa fa-bar-chart" aria-hidden="true"></i></a>'
+            anchor = f'<a target="_blank" href="{"/getInsights/" + name}"><i class="fa fa-file-archive-o" aria-hidden="true"></i></a>&nbsp;'
+        anchor = anchor + f'<a target="_blank" href="{"/generateInsights/" + name + "?datasource_id=" + datasource_id }"><i class="fa fa-bar-chart" aria-hidden="true"></i></a>'
         return Markup(anchor)
         
     @property

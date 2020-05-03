@@ -172,7 +172,7 @@ def data_preprocessing(data_frame,config_file,threshold):
     
 
 
-def generate_insights(filename,config_file=None,threshold=0.3):
+def generate_insights(filename,datasource_id,config_file=None,threshold=0.3):
     print('Generating insights for the file ' +  str(filename))
     data_frame = load_data(filename)
     unique_data,categorical_attributes,measure_attributes,categorical_index,timeseries_attributes,discarded_attributes = data_preprocessing(data_frame,config_file,threshold)
@@ -199,7 +199,7 @@ def generate_insights(filename,config_file=None,threshold=0.3):
 
     print("--- %s Minutes ---" % str(round(float((int(time.time()) - int(start_time)) /60), 2)))
 
-    generated_filename = generate_graphs(result,categorical_index,top_k,corr_result,filename)
+    generated_filename = generate_graphs(result,categorical_index,top_k,corr_result,filename, datasource_id)
     print("--- %s Minutes ---" % str(round(float((int(time.time()) - int(start_time)) /60), 2)))
     return generated_filename
 
