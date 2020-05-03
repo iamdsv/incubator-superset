@@ -19,6 +19,7 @@ import tempfile
 from typing import TYPE_CHECKING
 import shutil
 
+from pathlib import Path
 from flask import flash, g, redirect
 from flask_appbuilder import SimpleFormView
 from flask_appbuilder.models.sqla.interface import SQLAInterface
@@ -126,13 +127,15 @@ class CsvToDatabaseView(SimpleFormView):
         path = tempfile.NamedTemporaryFile(
             dir=app.config["UPLOAD_FOLDER"], suffix=extension, delete=False
         ).name
-        save_path = app.config["SAVE_FOLDER"] + form.csv_file.data.filename
+        check_path = app.config["SAVE_FOLDER"] + str(os.path.splitext(form.csv_file.data.filename)[0]) + "/"
+        save_path = check_path + form.csv_file.data.filename
         form.csv_file.data.filename = path
 
         try:
             utils.ensure_path_exists(config["UPLOAD_FOLDER"])
             upload_stream_write(form.csv_file.data, path)
             utils.ensure_path_exists(config["SAVE_FOLDER"])
+            Path(check_path).mkdir(parents=True, exist_ok=True)
             shutil.copy(path, save_path)
             table_name = form.name.data
 

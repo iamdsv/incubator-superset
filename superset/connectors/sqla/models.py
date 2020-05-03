@@ -446,8 +446,12 @@ class SqlaTable(Model, BaseDatasource):
     @app.route('/generateInsights/<filename>')
     def callGenInsights(filename):
         datasource_id = form_data = request.args.get("datasource_id")
-        full_filepath = config['SAVE_FOLDER'] + filename + '.csv'
-        return render_template(generate_insights(full_filepath, datasource_id))
+        full_filepath = config['SAVE_FOLDER'] + filename + "/" + filename + '.csv'
+        file_json_config = config['SAVE_FOLDER'] + filename + "/" + filename + '.json'
+        if path.isfile(file_json_config):
+            return render_template(generate_insights(full_filepath, datasource_id, file_json_config))
+        else:
+            return render_template(generate_insights(full_filepath, datasource_id))
     
     @app.route('/getInsights/<filename>')
     def getPrevInsights(filename):

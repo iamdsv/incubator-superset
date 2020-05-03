@@ -1,0 +1,59 @@
+{
+  "adhoc_filters": [],
+  "annotation_layers": [],
+  "bottom_margin": "auto",
+  "color_scheme": "bnbColors",
+  "comparison_type": "values",
+  "contribution": false,
+  "datasource": "13__table",
+  "granularity_sqla": "",
+  "groupby": [],
+  "label_colors": {},
+  "left_margin": "auto",
+  "limit": null,
+  "line_interpolation": "linear",
+  "metrics": [
+    {
+      "aggregate": null,
+      "column": null,
+      "expressionType": "SQL",
+      "fromFormData": true,
+      "hasCustomLabel": false,
+      "label": "",
+      "optionName": "metric_99m2whv729_py8jtzat9wl",
+      "sqlExpression": ""
+    }
+  ],
+  "order_desc": true,
+  "resample_method": null,
+  "resample_rule": null,
+  "rich_tooltip": true,
+  "rolling_type": "None",
+  "row_limit": 50000,
+  "send_time_range": false,
+  "show_brush": "auto",
+  "show_legend": true,
+  "show_markers": false,
+  "slice_id": 87,
+  "time_grain_sqla": "P1Y",
+  "time_range": "No filter",
+  "time_range_endpoints": [
+    "inclusive",
+    "exclusive"
+  ],
+  "timeseries_limit_metric": null,
+  "url_params": {},
+  "viz_type": "line",
+  "x_axis_format": "smart_date",
+  "x_axis_label": "",
+  "x_axis_showminmax": false,
+  "x_ticks_layout": "auto",
+  "y_axis_bounds": [
+    null,
+    null
+  ],
+  "y_axis_format": "SMART_NUMBER",
+  "y_axis_label": "",
+  "y_axis_showminmax": false,
+  "y_log_scale": false
+}

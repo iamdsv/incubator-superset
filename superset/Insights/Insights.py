@@ -165,7 +165,7 @@ def EnumerateInsight(S, Di, Ce, measure, dataCube, depth, lookup) :
                     outputList = []
                     if(len(heap) == kTop):
                         if maxOneInsPerSub:
-                            removeKey = str(heap[0][1]) + str(heap[0][2])
+                            removeKey = str(heap[0][1]) + str(heap[0][2]) + str(heap[0][6][0][1])
                             insightInHeap.pop(removeKey, None)
                         heapq.heappop(heap)
                     if inType in PI:
@@ -176,7 +176,7 @@ def EnumerateInsight(S, Di, Ce, measure, dataCube, depth, lookup) :
                     else :
                         outputList = [Score, str(SibG.Sub), SibG.Di, min(Phi, key=Phi.get), str(Phi[min(Phi, key=Phi.get)]), str(Phi), Ce, inType,dim_xvalues,dim_yvalues,Phi_Index]
                     if maxOneInsPerSub:    
-                        key = str(SibG.Sub) + str(SibG.Di)
+                        key = str(SibG.Sub) + str(SibG.Di) + str(Ce[0][1])
                         if key in insightInHeap.keys():
                             ind = [index for index, value in enumerate(heap) if float(value[0]) == float(insightInHeap[key]) and value[1] == str(SibG.Sub) and value[2] == SibG.Di]
                             if Score > insightInHeap[key]:

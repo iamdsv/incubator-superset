@@ -1,0 +1,34 @@
+{
+  "adhoc_filters": [],
+  "color_scheme": "bnbColors",
+  "datasource": "13__table",
+  "donut": false,
+  "granularity_sqla": "",
+  "groupby": [
+  ],
+  "label_colors": {},
+  "labels_outside": true,
+  "metric": {
+    "aggregate": null,
+    "column": null,
+    "expressionType": "SQL",
+    "fromFormData": true,
+    "hasCustomLabel": false,
+    "label": "",
+    "optionName": "metric_riw5cbpx4m_imqyxsgq1o",
+    "sqlExpression": ""
+  },
+  "number_format": "SMART_NUMBER",
+  "pie_label_type": "key",
+  "row_limit": 25,
+  "show_labels": true,
+  "show_legend": true,
+  "slice_id": 85,
+  "time_range": "No filter",
+  "time_range_endpoints": [
+    "inclusive",
+    "exclusive"
+  ],
+  "url_params": {},
+  "viz_type": "pie"
+}

@@ -10,8 +10,12 @@ from urllib.parse import urlencode, quote
 from superset import app
 config = app.config
 bar_json_file = open(config["SAMPLE_JSON"] + 'sampleBarJSON.json')
+pie_json_file = open(config["SAMPLE_JSON"] + 'samplePieJSON.json')
+line_json_file = open(config["SAMPLE_JSON"] + 'sampleLineJSON.json')
 adhocFilter_json_file = open(config["SAMPLE_JSON"] + 'adhocFilter.json')
 sampleBarJSON = json.load(bar_json_file)
+samplePieJSON = json.load(pie_json_file)
+sampleLineJSON = json.load(line_json_file)
 adhocFilter = json.load(adhocFilter_json_file)
 addSliceLinkList = []
 
@@ -109,6 +113,15 @@ def generate_graphs(results,categorical_index,k,corr_fig,filename, datasource_id
             graph_title = graph_title.replace(" ", "+")
             # if last composite extractor is % then display as pie chart only for On and O1
             if result[6][len(result[6])-1][0]=='%':
+                tempPieJSON = copy.deepcopy(samplePieJSON)
+                if len(result[6]) == 1:
+                    tempPieJSON["datasource"] = str(datasource_id)
+                    tempPieJSON["groupby"].append(str(result[2]))
+                    tempPieJSON["metrics"][0]["sqlExpression"] = str(result[6][0][0]) + "(\"" + str(result[6][0][1]) + "\")"
+                    tempPieJSON["metrics"][0]["label"] = str(result[6][0][0]) + "(\"" + str(result[6][0][1]) + "\")"
+                    tempPieJSON["adhoc_filters"] = adhocFilterList
+                    tempPieJSONStr = json.dumps(tempPieJSON)
+                    link = "/testSliceAdder?formData=" + str(quote(tempPieJSONStr)) + "&graphTitle=" + graph_title
                 pull_arr = [0] * len(result[8])
                 pull_arr[outstanding_index] = 0.1
                 fig = go.Figure(data=[go.Pie(labels=result[8], values=result[9],pull=pull_arr)])
@@ -122,6 +135,8 @@ def generate_graphs(results,categorical_index,k,corr_fig,filename, datasource_id
                     tempBarJSON["metrics"][0]["sqlExpression"] = str(result[6][0][0]) + "(\"" + str(result[6][0][1]) + "\")"
                     tempBarJSON["metrics"][0]["label"] = str(result[6][0][0]) + "(\"" + str(result[6][0][1]) + "\")"
                     tempBarJSON["adhoc_filters"] = adhocFilterList
+                    tempBarJSON["x_axis_label"] = str(result[2])
+                    tempBarJSON["y_axis_label"] = str(result[6][0][1])
                     tempBarJSONStr = json.dumps(tempBarJSON)
                     link = "/testSliceAdder?formData=" + str(quote(tempBarJSONStr)) + "&graphTitle=" + graph_title
                 colors = ['lightslategray'] * len(result[8])
@@ -131,6 +146,17 @@ def generate_graphs(results,categorical_index,k,corr_fig,filename, datasource_id
 
 
         elif result[7]=='Trend':
+            tempLineJSON = copy.deepcopy(sampleLineJSON)
+            if len(result[6]) == 1:
+                tempLineJSON["datasource"] = str(datasource_id)
+                tempLineJSON["granularity_sqla"] = str(result[2])
+                tempLineJSON["metrics"][0]["sqlExpression"] = str(result[6][0][0]) + "(\"" + str(result[6][0][1]) + "\")"
+                tempLineJSON["metrics"][0]["label"] = str(result[6][0][0]) + "(\"" + str(result[6][0][1]) + "\")"
+                tempLineJSON["adhoc_filters"] = adhocFilterList
+                tempLineJSON["x_axis_label"] = str(result[2])
+                tempLineJSON["y_axis_label"] = str(result[6][0][1])
+                tempLineJSONStr = json.dumps(tempLineJSON)
+                link = "/testSliceAdder?formData=" + str(quote(tempLineJSONStr)) + "&graphTitle=" + graph_title
             fig = go.Figure(data=go.Scatter(x=result[8][1:], y=result[9][1:]))
             xaxis_title=result[2]
             explanation += measure + " of" + subspace_str + " follows a trend across " + breakdown_dimension
