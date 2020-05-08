@@ -75,6 +75,18 @@ def generate_graphs(results,categorical_index,k,corr_fig,filename,datasource_id)
     counter = 1
 
     for result in results:
+        x_values = result[8]
+        y_values = result[9]
+        yx = list(zip(y_values, x_values))
+        if result[7] == 'O1':
+            yx = sorted(yx, reverse = True)
+        elif result[7] == 'On':
+            yx = sorted(yx)
+        x_values = [x for y, x in yx]
+        y_values = [y for y, x in yx]
+        if len(x_values) > 15 :
+            x_values = x_values[0:15]
+            y_values = y_values[0:15]
         adhocFilterList = []
         subspace_dict = literal_eval(result[1])
         subspace_str = ""
@@ -91,7 +103,7 @@ def generate_graphs(results,categorical_index,k,corr_fig,filename,datasource_id)
 
         insight_desc = insight_description[result[7]]
         explanation = ""
-        # explantion = get_extractor_description(result[6], 1) + " breakdown by " + str(result[2]) + str(result[8][result[10]])
+        # explantion = get_extractor_description(result[6], 1) + " breakdown by " + str(result[2]) + str(x_values[result[10]])
         ce_desc = get_extractor_description(result[6], 0)
         breakdown_dimension = str(result[2])
         measure = str(result[6][0][1])
@@ -100,8 +112,8 @@ def generate_graphs(results,categorical_index,k,corr_fig,filename,datasource_id)
             indices_dict = literal_eval(str(result[10]))
             # get domain value which is the highest valued subspace
             value = result[3][category_index][1]
-            outstanding_index = indices_dict[value]
-            winning_category = str(result[8][int(outstanding_index)])
+            outstanding_index = 0
+            winning_category = str(x_values[int(outstanding_index)])
             if len(result[6]) > 1:
                 comparision_var = "has highest" if result[7] =='O1' or result[6][1][0] == 'DPrev' or result[6][1][0] == 'DAvg' else "has lowest"
                 extractor_word = extractor_text[result[6][1][0]] + " " + str(result[6][1][1])
@@ -122,9 +134,9 @@ def generate_graphs(results,categorical_index,k,corr_fig,filename,datasource_id)
                     tempPieJSON["adhoc_filters"] = adhocFilterList
                     tempPieJSONStr = json.dumps(tempPieJSON)
                     link = "/testSliceAdder?formData=" + str(quote(tempPieJSONStr)) + "&graphTitle=" + graph_title
-                pull_arr = [0] * len(result[8])
+                pull_arr = [0] * len(x_values)
                 pull_arr[outstanding_index] = 0.1
-                fig = go.Figure(data=[go.Pie(labels=result[8], values=result[9],pull=pull_arr)])
+                fig = go.Figure(data=[go.Pie(labels=x_values, values=y_values,pull=pull_arr)])
                 xaxis_title = ""
 
             else:
@@ -139,9 +151,9 @@ def generate_graphs(results,categorical_index,k,corr_fig,filename,datasource_id)
                     tempBarJSON["y_axis_label"] = str(result[6][0][1])
                     tempBarJSONStr = json.dumps(tempBarJSON)
                     link = "/testSliceAdder?formData=" + str(quote(tempBarJSONStr)) + "&graphTitle=" + graph_title
-                colors = ['lightslategray'] * len(result[8])
+                colors = ['lightslategray'] * len(x_values)
                 colors[outstanding_index] = 'crimson'
-                fig = go.Figure([go.Bar(x=result[8], y=result[9],marker_color=colors)])
+                fig = go.Figure([go.Bar(x=x_values, y=y_values,marker_color=colors)])
                 xaxis_title=result[2]
 
 
@@ -157,7 +169,7 @@ def generate_graphs(results,categorical_index,k,corr_fig,filename,datasource_id)
                 tempLineJSON["y_axis_label"] = str(result[6][0][1])
                 tempLineJSONStr = json.dumps(tempLineJSON)
                 link = "/testSliceAdder?formData=" + str(quote(tempLineJSONStr)) + "&graphTitle=" + graph_title
-            fig = go.Figure(data=go.Scatter(x=result[8][1:], y=result[9][1:]))
+            fig = go.Figure(data=go.Scatter(x=x_values[1:], y=y_values[1:]))
             xaxis_title=result[2]
             if len(result[6]) > 1:
                 explanation += measure + " of" + subspace_str + " follows a trend across " + extractor_text[result[6][1][0]] + " " + str(result[6][1][1])
@@ -200,13 +212,15 @@ def generate_graphs(results,categorical_index,k,corr_fig,filename,datasource_id)
         if not added_styles:
             f.write("<meta name='viewport' content='width=device-width, initial-scale=1.0'>")
             f.write("<link  rel='stylesheet' href='/static/css/styles.css'/>")
+            f.write("<script src='/static/js/plotly-latest.min.js'></script>")
+            f.write("<title>"+ str(inp_filename) + " Insights</title>")
         for fig in figures:
             if counter % 2 == 1:
                 f.write("<div class='container'>")
                 f.write("<div class='first'>")
             else:
                 f.write("<div class='second'>")
-            f.write(fig.to_html(full_html=False, include_plotlyjs='cdn'))
+            f.write(fig.to_html(full_html=False, include_plotlyjs=False))
             f.write("</div>")
             if counter % 2 == 0:
                 f.write("</div>")
