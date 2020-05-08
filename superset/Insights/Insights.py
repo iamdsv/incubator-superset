@@ -150,11 +150,11 @@ def Insights(df, tau, k, categorical_attributes, measure_attributes, timeseries_
     if limit_search_space:
         if unique_share is None or unique_share<=0 or unique_share>=1:
             size = sys.getsizeof(df)
-            unique_percent = get_unique_cutoff(size) * 100
+            unique_percent = get_unique_cutoff(size)
             print('Invalid unique percent set')
         else:
             unique_percent = unique_share
-    print(unique_percent, '% Unique values will be used for insight generation')
+    print(str(unique_percent * 100), '% Unique values will be used for insight generation')
     dim = len(allCols)
     dimCatCols = len(catCols)
     CeAll = req.getCeAll(measures, catCols, tau)
