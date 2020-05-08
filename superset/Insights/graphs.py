@@ -41,7 +41,7 @@ extractor_text = {
     'Rank' : 'Rank',
     '%' : 'percentage',
     'DAvg': 'difference from average',
-    'DPrev': 'difference from previous year'
+    'DPrev': 'difference from previous'
 }
 
 def get_extractor_description(composite_extractor, start_range):
@@ -70,7 +70,7 @@ Format of result is
 #TODO: Add measure also as an return value
 11 - Measure
 """
-def generate_graphs(results,categorical_index,k,corr_fig,filename, datasource_id):
+def generate_graphs(results,categorical_index,k,corr_fig,filename,datasource_id):
     figures = []
     counter = 1
 
@@ -104,7 +104,7 @@ def generate_graphs(results,categorical_index,k,corr_fig,filename, datasource_id
             winning_category = str(result[8][int(outstanding_index)])
             if len(result[6]) > 1:
                 comparision_var = "has highest" if result[7] =='O1' or result[6][1][0] == 'DPrev' or result[6][1][0] == 'DAvg' else "has lowest"
-                extractor_word = extractor_text[result[6][1][0]]
+                extractor_word = extractor_text[result[6][1][0]] + " " + str(result[6][1][1])
             else:
                 comparision_var = "has highest" if result[7] =='O1' else "has lowest" 
                 extractor_word = extractor_text[result[6][0][0]]
@@ -159,7 +159,10 @@ def generate_graphs(results,categorical_index,k,corr_fig,filename, datasource_id
                 link = "/testSliceAdder?formData=" + str(quote(tempLineJSONStr)) + "&graphTitle=" + graph_title
             fig = go.Figure(data=go.Scatter(x=result[8][1:], y=result[9][1:]))
             xaxis_title=result[2]
-            explanation += measure + " of" + subspace_str + " follows a trend across " + breakdown_dimension
+            if len(result[6]) > 1:
+                explanation += measure + " of" + subspace_str + " follows a trend across " + extractor_text[result[6][1][0]] + " " + str(result[6][1][1])
+            else:
+                explanation += measure + " of" + subspace_str + " follows a trend across " + breakdown_dimension
             
         fig.update_layout(
             xaxis_title=result[2],

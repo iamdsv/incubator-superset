@@ -25,7 +25,7 @@ from typing import Any, Dict, Hashable, List, NamedTuple, Optional, Tuple, Union
 import pandas as pd
 import sqlalchemy as sa
 import sqlparse
-from flask import escape, Markup, render_template, redirect, request
+from flask import escape, Markup, render_template, redirect, request, url_for, flash
 from flask_appbuilder import Model
 from flask_babel import lazy_gettext as _
 from sqlalchemy import (
@@ -61,6 +61,7 @@ from superset.models.core import Database
 from superset.models.helpers import AuditMixinNullable, QueryResult
 from superset.utils import core as utils, import_datasource
 from superset.Insights.generate_insights import generate_insights
+import uuid
 
 config = app.config
 metadata = Model.metadata  # pylint: disable=no-member
@@ -443,9 +444,10 @@ class SqlaTable(Model, BaseDatasource):
     def __repr__(self):
         return self.name
 
-    @app.route('/generateInsights/<filename>')
-    def callGenInsights(filename):
-        datasource_id = form_data = request.args.get("datasource_id")
+    @app.route('/generateInsights/')
+    def callGenInsights():
+        filename = request.args.get("name")
+        datasource_id = request.args.get("datasource_id")
         full_filepath = config['SAVE_FOLDER'] + filename + "/" + filename + '.csv'
         file_json_config = config['SAVE_FOLDER'] + filename + "/" + filename + '.json'
         if path.isfile(file_json_config):
@@ -453,8 +455,9 @@ class SqlaTable(Model, BaseDatasource):
         else:
             return render_template(generate_insights(full_filepath, datasource_id))
     
-    @app.route('/getInsights/<filename>')
-    def getPrevInsights(filename):
+    @app.route('/getInsights/')
+    def getPrevInsights():
+        filename = request.args.get("name")
         prev_file = 'reports/' + filename + "/" + filename + '.html'
         return render_template(prev_file)
 
@@ -465,6 +468,24 @@ class SqlaTable(Model, BaseDatasource):
         extra_data = "action=saveas&slice_id=87&slice_name=" + str(graph_title) + "&add_to_dash=noSave&goto_dash=false&custom_create=Yes"
         url = "http://localhost:8088/superset/explore/?form_data=" + str(form_data) + "&" + extra_data
         return redirect(url)
+    
+    @app.route('/uploadConfig', methods = ['GET', 'POST'])
+    def upload_file():
+        name = request.args.get("name")
+        upload_id = request.args.get("upload_id")
+        print("-----", name)
+        if request.method == 'POST':
+            f = request.files['file-upload' + upload_id]
+            extension_check = f.filename.split('.')[1]
+            if extension_check == 'json' :
+                f.filename = name + '.json'
+                f.save(path.join( config['SAVE_FOLDER'] + name + "/" , f.filename))
+                success_msg = "JSON configuration uploaded successfully for " + name
+                flash(success_msg, "info")
+            else:
+                failure_msg = "Configuration file needs to be of type JSON"
+                flash(failure_msg, "danger")
+            return redirect("/tablemodelview/list/?_flt_1_is_sqllab_view=y")
         
     @property
     def generate_insights(self) -> str:
@@ -473,8 +494,15 @@ class SqlaTable(Model, BaseDatasource):
         check_file = config['REPORT_SAVE'] + 'reports/' + name + "/" + name + '.html'
         anchor = ""
         if path.isfile(check_file):
-            anchor = f'<a target="_blank" href="{"/getInsights/" + name}"><i class="fa fa-file-archive-o" aria-hidden="true"></i></a>&nbsp;'
-        anchor = anchor + f'<a target="_blank" href="{"/generateInsights/" + name + "?datasource_id=" + datasource_id }"><i class="fa fa-bar-chart" aria-hidden="true"></i></a>'
+            anchor = f'<a target="_blank" href="{"/getInsights/?name=" + name}"><i class="fa fa-file-archive-o" aria-hidden="true"></i></a>&nbsp;'
+        anchor = anchor + f'<a target="_blank" href="{"/generateInsights/?name=" + name + "&datasource_id=" + datasource_id }"><i class="fa fa-bar-chart" aria-hidden="true"></i></a>'
+        return Markup(anchor)
+
+    @property
+    def upload_json_config(self) -> str:
+        name = escape(self.name)
+        self.upload_id = getattr(self, 'upload_id', uuid.uuid4())
+        anchor = f'<form action = {"/uploadConfig?name=" + name + "&upload_id=" + str(self.upload_id)} method = "POST" enctype = "multipart/form-data"><label for={"file-upload" + str(self.upload_id)}><i class="fa fa-upload" aria-hidden="true" style="cursor:pointer; color: #00a699"></i></label><input style="display:none" id={"file-upload" + str(self.upload_id)} name = {"file-upload" + str(self.upload_id)} type="file" onchange="form.submit()"/></form>'
         return Markup(anchor)
         
     @property

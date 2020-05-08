@@ -41,7 +41,8 @@ def classify_attributes_by_user_config(dataframe,filename):
     discarded_attributes = []
     timeseries_attributes = {}
     timeseries_list = []
-
+    m_arr = []
+    
     if not path.isfile(filename):
         raise FileNotFoundError(filename)
     cfile = open(filename) 
@@ -55,7 +56,6 @@ def classify_attributes_by_user_config(dataframe,filename):
         c_arr = data['categorical_attributes']
     except KeyError:
         raise CategoricalAttrMissing()
-        pass 
     try:
         m_arr = data['measure_attributes']
     except KeyError:
@@ -72,6 +72,7 @@ def classify_attributes_by_user_config(dataframe,filename):
         #TODO: Convert this to dict and then check 
         if attribute in dataframe.columns:
             categorical_attributes.append(attribute)
+            data_dict[attribute] = dataframe[attribute].unique()
 
         else:
             print('Categorical attributes not present', attribute)
@@ -103,7 +104,6 @@ def classify_attributes_by_threshold_and_get_unique_categorical_data(df,threshol
     df_length = len(df)
 
     for attribute in df.columns:
-        
         data_without_duplicates = df[attribute].unique()
         unique_factor = len(data_without_duplicates)/df_length
         inv_threshold = 1 - threshold
@@ -119,6 +119,7 @@ def classify_attributes_by_threshold_and_get_unique_categorical_data(df,threshol
                 except ValueError:
                     if unique_factor<threshold:
                         categorical_attributes.append(attribute)
+                        data_dict[attribute] = data_without_duplicates
                         if len(data_without_duplicates) > 0 and is_date(str(data_without_duplicates[0])):
                             timeseries_attributes[attribute] = attribute
                     else:
@@ -187,7 +188,11 @@ def generate_insights(filename,datasource_id,config_file=None,threshold=0.3):
     tau = 2
     top_k = 40
     maxOneInsPerSub = True
-    result = ins.Insights(data_frame, tau, top_k, categorical_attributes, measure_attributes, timeseries_attributes, maxOneInsPerSub)
+    newImpactCalc = False
+    limit_search_space = True
+    unique_share = 0
+    result = ins.Insights(data_frame, tau, top_k, categorical_attributes, measure_attributes, timeseries_attributes, maxOneInsPerSub, newImpactCalc, limit_search_space,unique_share)
+    
     result = sorted(result, key=lambda elem: elem[0], reverse=True)
     # print("\n")
     # for r in result:
@@ -199,9 +204,10 @@ def generate_insights(filename,datasource_id,config_file=None,threshold=0.3):
 
     print("--- %s Minutes ---" % str(round(float((int(time.time()) - int(start_time)) /60), 2)))
 
-    generated_filename = generate_graphs(result,categorical_index,top_k,corr_result,filename, datasource_id)
+    generated_filename = generate_graphs(result,categorical_index,top_k,corr_result,filename,datasource_id)
     print("--- %s Minutes ---" % str(round(float((int(time.time()) - int(start_time)) /60), 2)))
     return generated_filename
+
 
     
 
