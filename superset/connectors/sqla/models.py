@@ -473,7 +473,6 @@ class SqlaTable(Model, BaseDatasource):
     def upload_file():
         name = request.args.get("name")
         upload_id = request.args.get("upload_id")
-        print("-----", name)
         if request.method == 'POST':
             f = request.files['file-upload' + upload_id]
             extension_check = f.filename.split('.')[1]
