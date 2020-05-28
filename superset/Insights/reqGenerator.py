@@ -64,7 +64,7 @@ def generateDataCube(df, categoricalCols, measures, timeseriesCols):
             allCategoricalValues = []
             for measure in measures:
                 allMeasuresValues.append(c.sum()[measure].tolist())
-            countFrame = c.count()
+            countFrame = c.nunique()
             for cat in catCols:
                 allCategoricalValues.append(countFrame[cat].tolist() if cat in countFrame.columns else [0] * len(countFrame))
             for ind in range(len(allMeasuresValues[0])):
@@ -89,7 +89,7 @@ def generateDataCube(df, categoricalCols, measures, timeseriesCols):
             allCategoricalValues = []
             for measure in measures:
                 allMeasuresValues.append(c.sum()[measure])
-            countFrame = c.count()
+            countFrame = c.nunique()
             for cat in catCols:
                 allCategoricalValues.append(countFrame[cat])
             for cols in allCols:

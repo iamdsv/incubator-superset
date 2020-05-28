@@ -190,8 +190,9 @@ def generate_insights(filename,datasource_id,config_file=None,threshold=0.3):
     maxOneInsPerSub = True
     newImpactCalc = False
     limit_search_space = True
+    wrapImpactCalc = False
     unique_share = 0
-    result = ins.Insights(data_frame, tau, top_k, categorical_attributes, measure_attributes, timeseries_attributes, maxOneInsPerSub, newImpactCalc, limit_search_space,unique_share)
+    result = ins.Insights(data_frame, tau, top_k, categorical_attributes, measure_attributes, timeseries_attributes, maxOneInsPerSub, newImpactCalc, limit_search_space,unique_share,wrapImpactCalc)
     
     result = sorted(result, key=lambda elem: elem[0], reverse=True)
     # print("\n")

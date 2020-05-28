@@ -39,9 +39,9 @@ extractor_text = {
     'Sum' : 'Sum of',
     'Count' : 'Count of',
     'Rank' : 'Rank',
-    '%' : 'percentage',
-    'DAvg': 'difference from average',
-    'DPrev': 'difference from previous'
+    '%' : 'Percentage',
+    'DAvg': 'Difference from average',
+    'DPrev': 'Difference from previous'
 }
 
 def get_extractor_description(composite_extractor, start_range):
@@ -73,7 +73,7 @@ Format of result is
 def generate_graphs(results,categorical_index,k,corr_fig,filename,datasource_id):
     figures = []
     counter = 1
-
+    inp_filename = os.path.splitext(os.path.basename(filename))[0]
     for result in results:
         x_values = result[8]
         y_values = result[9]
@@ -91,13 +91,19 @@ def generate_graphs(results,categorical_index,k,corr_fig,filename,datasource_id)
         subspace_dict = literal_eval(result[1])
         subspace_str = ""
         link = "http://www.google.com"
+        subspace_keys = []
+        subspace_values = []
         for key, value in subspace_dict.items():
             if value!='*':
-                tempAdhocFilter = copy.deepcopy(adhocFilter)
-                subspace_str = subspace_str + " " + key + " " + value
-                tempAdhocFilter["subject"] = str(key)
-                tempAdhocFilter["comparator"] = str(value)
-                adhocFilterList.append(tempAdhocFilter)
+                subspace_keys.append(str(key))
+                subspace_values.append(str(value))
+
+        for key, value in zip(subspace_keys, subspace_values):
+            tempAdhocFilter = copy.deepcopy(adhocFilter)
+            subspace_str = subspace_str + " " + key + " " + value
+            tempAdhocFilter["subject"] = str(key)
+            tempAdhocFilter["comparator"] = str(value)
+            adhocFilterList.append(tempAdhocFilter)
         if len(subspace_str)==0:
             subspace_str = ' Entire space'
 
@@ -120,7 +126,7 @@ def generate_graphs(results,categorical_index,k,corr_fig,filename,datasource_id)
             else:
                 comparision_var = "has highest" if result[7] =='O1' else "has lowest" 
                 extractor_word = extractor_text[result[6][0][0]]
-            explanation += winning_category + " " + breakdown_dimension + " " + comparision_var + " " + extractor_word + " " + measure + " for" + subspace_str
+            explanation += winning_category + " " + breakdown_dimension + " " + comparision_var + " " + extractor_word.lower() + " " + measure + " for" + subspace_str
             graph_title = extractor_word + " " + measure + " for " + breakdown_dimension + " for" + subspace_str
             graph_title = graph_title.replace(" ", "+")
             # if last composite extractor is % then display as pie chart only for On and O1
@@ -141,16 +147,80 @@ def generate_graphs(results,categorical_index,k,corr_fig,filename,datasource_id)
 
             else:
                 tempBarJSON = copy.deepcopy(sampleBarJSON)
+                tempBarJSON["datasource"] = str(datasource_id)
+                tempBarJSON["groupby"].append(str(result[2]))
+                tempBarJSON["adhoc_filters"] = adhocFilterList
+                tempBarJSON["x_axis_label"] = str(result[2])
+                tempBarJSON["y_axis_label"] = str(result[6][0][1])
                 if len(result[6]) == 1:
-                    tempBarJSON["datasource"] = str(datasource_id)
-                    tempBarJSON["groupby"].append(str(result[2]))
                     tempBarJSON["metrics"][0]["sqlExpression"] = str(result[6][0][0]) + "(\"" + str(result[6][0][1]) + "\")"
                     tempBarJSON["metrics"][0]["label"] = str(result[6][0][0]) + "(\"" + str(result[6][0][1]) + "\")"
-                    tempBarJSON["adhoc_filters"] = adhocFilterList
-                    tempBarJSON["x_axis_label"] = str(result[2])
-                    tempBarJSON["y_axis_label"] = str(result[6][0][1])
-                    tempBarJSONStr = json.dumps(tempBarJSON)
-                    link = "/testSliceAdder?formData=" + str(quote(tempBarJSONStr)) + "&graphTitle=" + graph_title
+                else:
+                    if result[6][1][0] == "DAvg":
+                        if breakdown_dimension == result[6][1][1]:
+                            Select_SubspaceKeys = ""
+                            Groupby_SubspaceKeys = ""
+                            Where_SubspaceKeys = ""
+                            for key, value in zip(subspace_keys, subspace_values):
+                                Select_SubspaceKeys += ", T1.\"" + key + "\" as \"Inner" + key + "\""
+                                Groupby_SubspaceKeys += ", T1.\"" + key + "\""
+                                if Where_SubspaceKeys == "":
+                                    Where_SubspaceKeys += "WHERE T.\"Inner" + key + "\" = \'" + value + "\'"
+                                else:
+                                    Where_SubspaceKeys += "AND T.\"Inner" + key + "\" = \'" + value + "\'"
+                            sampleDAvgSQL = str(result[6][0][0]) + "(\"" + result[6][0][1] + "\") - (SELECT AVG(T.\"" + result[6][0][1] + "\") FROM (SELECT T1.\"" + breakdown_dimension + "\" as \"" + breakdown_dimension + "\"" + Select_SubspaceKeys + ", " + str(result[6][0][0]) +  "(T1.\"" + result[6][0][1] + "\") as \"" + result[6][0][1] + "\" FROM \"" + inp_filename + "\" AS T1 GROUP BY T1.\"" + breakdown_dimension + "\"" + Groupby_SubspaceKeys + ") AS T " + Where_SubspaceKeys + ")"
+                            tempBarJSON["metrics"][0]["sqlExpression"] = sampleDAvgSQL
+                            tempBarJSON["metrics"][0]["label"] = str(result[6][0][0]) + "(\"" + str(result[6][0][1]) + "\") - (SELECT AVG(T.\"" + str(result[6][0][1]) + "\")"
+                        else:
+                            Select_SubspaceKeys = ""
+                            Groupby_SubspaceKeys = ""
+                            Where_SubspaceKeys = ""
+                            for key, value in zip(subspace_keys, subspace_values):
+                                Select_SubspaceKeys += ", T1.\"" + key + "\" as \"Inner" + key + "\""
+                                Groupby_SubspaceKeys += ", T1.\"" + key + "\""
+                            sampleDAvgSQL = str(result[6][0][0]) + "(\"" + result[6][0][1] + "\") - (SELECT AVG(T.\"" + result[6][0][1] + "\") FROM (SELECT T1.\"" + breakdown_dimension + "\" as \"Inner" + breakdown_dimension + "\"" + Select_SubspaceKeys + ", " + str(result[6][0][0]) +  "(T1.\"" + result[6][0][1] + "\") as \"" + result[6][0][1] + "\" FROM \"" + inp_filename + "\" AS T1 GROUP BY T1.\"" + breakdown_dimension + "\"" + Groupby_SubspaceKeys + ") AS T WHERE T.\"Inner" + breakdown_dimension + "\" = \"" + inp_filename + "\".\"" + breakdown_dimension + "\")"
+                            tempBarJSON["metrics"][0]["sqlExpression"] = sampleDAvgSQL
+                            tempBarJSON["metrics"][0]["label"] = str(result[6][0][0]) + "(\"" + result[6][0][1] + "\") - (SELECT AVG(T.\"" + result[6][0][1] + "\")"
+                    elif result[6][1][0] == "DPrev":
+                        if breakdown_dimension == result[6][1][1]:
+                            Select_SubspaceKeys = ""
+                            Having_SubspaceKeys = ""
+                            for key, value in zip(subspace_keys, subspace_values):
+                                Select_SubspaceKeys += ", \"" + key + "\""
+                                if Having_SubspaceKeys == "":
+                                    Having_SubspaceKeys += "HAVING \"" + key + "\" = " + "\'" + value + "\'"
+                                else:
+                                    Having_SubspaceKeys += ", \"" + key + "\" = " + "\'" + value + "\'"
+                            sampleDPrevSQL = "(SELECT T.\"DiffPrev\" FROM (SELECT cur.\"" + breakdown_dimension + "\" AS \"Inner" + breakdown_dimension + "\", (cur.\"" + str(result[6][0][1]) + "\" - previous.\"" + str(result[6][0][1]) + "\") AS \"DiffPrev\" FROM (SELECT ROW_NUMBER() OVER(ORDER BY \"" + breakdown_dimension + "\") AS RowNumber, \"" + breakdown_dimension + "\", " + str(result[6][0][0]) +  "(\"" + str(result[6][0][1]) + "\") AS \"" + str(result[6][0][1]) + "\" FROM \"" + inp_filename + "\" GROUP BY \"" + breakdown_dimension + "\"" + Select_SubspaceKeys + Having_SubspaceKeys + ") AS cur LEFT OUTER JOIN (SELECT ROW_NUMBER() OVER(ORDER BY \"" + breakdown_dimension + "\") AS RowNumber, \"" + breakdown_dimension + "\", " + str(result[6][0][0]) +  "(\"" + str(result[6][0][1]) + "\") AS \"" + str(result[6][0][1]) + "\" FROM \"" + inp_filename + "\" GROUP BY \"" + breakdown_dimension + "\"" + Select_SubspaceKeys  + Having_SubspaceKeys + ") previous ON cur.RowNumber = previous.RowNumber + 1) AS T WHERE T.\"Inner" + breakdown_dimension + "\" = \"" + breakdown_dimension + "\")"
+                            tempBarJSON["metrics"][0]["sqlExpression"] = sampleDPrevSQL
+                            tempBarJSON["metrics"][0]["label"] = "T.\"DiffPrev\""
+                        else:
+                            Select_SubspaceKeys = ""
+                            Having_SubspaceKeys = ""
+                            T1_SubspaceKeys = ""
+                            T2_SubspaceKeys = ""
+                            Where_SubspaceKeys = ""
+                            for key, value in zip(subspace_keys, subspace_values):
+                                Select_SubspaceKeys += ", cur.\"" + key + "\" AS \"Inner" + key + "\""
+                                if Having_SubspaceKeys == "":
+                                    Having_SubspaceKeys += "HAVING \"" + key + "\" = " + "\'" + value + "\'"
+                                else:
+                                    Having_SubspaceKeys += ", \"" + key + "\" = " + "\'" + value + "\'"
+                                if T1_SubspaceKeys == "":
+                                    T1_SubspaceKeys += "T1.\"" + key + "\""
+                                    T2_SubspaceKeys += "T2.\"" + key + "\""
+                                else:
+                                    T1_SubspaceKeys += ", T1.\"" + key + "\""
+                                    T2_SubspaceKeys += ", T2.\"" + key + "\""
+                                if Where_SubspaceKeys == "":
+                                    Where_SubspaceKeys += "WHERE T.\"Inner" + key + "\" = \'" + value + "\'"
+                                else:
+                                    Where_SubspaceKeys += "AND T.\"Inner" + key + "\" = \'" + value + "\'"
+                            sampleDPrevSQL = "(SELECT T.\"DiffPrev\" FROM (SELECT (cur.\"" + str(result[6][0][1]) + "\" - previous.\"" + str(result[6][0][1]) + "\")  AS \"DiffPrev\"" + Select_SubspaceKeys + " FROM (SELECT ROW_NUMBER() OVER(ORDER BY " + T1_SubspaceKeys + ") AS RowNumber, " + T1_SubspaceKeys + ", SUM(T1.\"" + str(result[6][0][1]) + "\") AS \"" + str(result[6][0][1]) + "\" FROM \"" + inp_filename + "\" AS T1 GROUP BY " + T1_SubspaceKeys + ", T1.\"" + breakdown_dimension + "\" HAVING T1.\"" + breakdown_dimension + "\" = \"" + inp_filename + "\".\"" + breakdown_dimension + "\") AS cur LEFT OUTER JOIN (SELECT ROW_NUMBER() OVER(ORDER BY " + T2_SubspaceKeys + ") AS RowNumber, " + T2_SubspaceKeys + ", SUM(T2.\"" + str(result[6][0][1]) + "\") AS \"" + str(result[6][0][1]) + "\" FROM \"" + inp_filename + "\" AS T2 GROUP BY " + T2_SubspaceKeys + ", T2.\"" + breakdown_dimension + "\" HAVING T2.\"" + breakdown_dimension + "\" = \"" + inp_filename + "\".\"" + breakdown_dimension + "\") AS previous ON cur.RowNumber = previous.RowNumber + 1) AS T " + Where_SubspaceKeys + ")"
+                            tempBarJSON["metrics"][0]["sqlExpression"] = sampleDPrevSQL
+                            tempBarJSON["metrics"][0]["label"] = "T.\"DiffPrev\""
+                tempBarJSONStr = json.dumps(tempBarJSON)
+                link = "/testSliceAdder?formData=" + str(quote(tempBarJSONStr)) + "&graphTitle=" + graph_title
                 colors = ['lightslategray'] * len(x_values)
                 colors[outstanding_index] = 'crimson'
                 fig = go.Figure([go.Bar(x=x_values, y=y_values,marker_color=colors)])
@@ -159,16 +229,81 @@ def generate_graphs(results,categorical_index,k,corr_fig,filename,datasource_id)
 
         elif result[7]=='Trend':
             tempLineJSON = copy.deepcopy(sampleLineJSON)
+            tempLineJSON["datasource"] = str(datasource_id)
+            tempLineJSON["granularity_sqla"] = str(result[2])
+            tempLineJSON["adhoc_filters"] = adhocFilterList
+            tempLineJSON["x_axis_label"] = str(result[2])
+            tempLineJSON["y_axis_label"] = str(result[6][0][1])
+            tempLineJSON["groupby"].append(str(breakdown_dimension))
             if len(result[6]) == 1:
-                tempLineJSON["datasource"] = str(datasource_id)
-                tempLineJSON["granularity_sqla"] = str(result[2])
                 tempLineJSON["metrics"][0]["sqlExpression"] = str(result[6][0][0]) + "(\"" + str(result[6][0][1]) + "\")"
                 tempLineJSON["metrics"][0]["label"] = str(result[6][0][0]) + "(\"" + str(result[6][0][1]) + "\")"
-                tempLineJSON["adhoc_filters"] = adhocFilterList
-                tempLineJSON["x_axis_label"] = str(result[2])
-                tempLineJSON["y_axis_label"] = str(result[6][0][1])
-                tempLineJSONStr = json.dumps(tempLineJSON)
-                link = "/testSliceAdder?formData=" + str(quote(tempLineJSONStr)) + "&graphTitle=" + graph_title
+            else:
+                if result[6][1][0] == "DAvg":
+                    if breakdown_dimension == result[6][1][1]:
+                        Select_SubspaceKeys = ""
+                        Groupby_SubspaceKeys = ""
+                        Where_SubspaceKeys = ""
+                        for key, value in zip(subspace_keys, subspace_values):
+                            Select_SubspaceKeys += ", T1.\"" + key + "\" as \"Inner" + key + "\""
+                            Groupby_SubspaceKeys += ", T1.\"" + key + "\""
+                            if Where_SubspaceKeys == "":
+                                Where_SubspaceKeys += "WHERE T.\"Inner" + key + "\" = \'" + value + "\'"
+                            else:
+                                Where_SubspaceKeys += "AND T.\"Inner" + key + "\" = \'" + value + "\'"
+                        sampleDAvgSQL = "SUM(\"" + result[6][0][1] + "\") - (SELECT AVG(T.\"" + result[6][0][1] + "\") FROM (SELECT T1.\"" + breakdown_dimension + "\" as \"" + breakdown_dimension + "\"" + Select_SubspaceKeys + ", SUM(T1.\"" + result[6][0][1] + "\") as \"" + result[6][0][1] + "\" FROM \"" + inp_filename + "\" AS T1 GROUP BY T1.\"" + breakdown_dimension + "\"" + Groupby_SubspaceKeys + ") AS T " + Where_SubspaceKeys + ")"
+                        tempLineJSON["metrics"][0]["sqlExpression"] = sampleDAvgSQL
+                        tempLineJSON["metrics"][0]["label"] = "SUM(\"" + str(result[6][0][1]) + "\") - (SELECT AVG(T.\"" + str(result[6][0][1]) + "\")"
+                    else:
+                        Select_SubspaceKeys = ""
+                        Groupby_SubspaceKeys = ""
+                        Where_SubspaceKeys = ""
+                        for key, value in zip(subspace_keys, subspace_values):
+                            Select_SubspaceKeys += ", T1.\"" + key + "\" as \"Inner" + key + "\""
+                            Groupby_SubspaceKeys += ", T1.\"" + key + "\""
+                        sampleDAvgSQL = "SUM(\"" + result[6][0][1] + "\") - (SELECT AVG(T.\"" + result[6][0][1] + "\") FROM (SELECT T1.\"" + breakdown_dimension + "\" as \"Inner" + breakdown_dimension + "\"" + Select_SubspaceKeys + ", SUM(T1.\"" + result[6][0][1] + "\") as \"" + result[6][0][1] + "\" FROM \"" + inp_filename + "\" AS T1 GROUP BY T1.\"" + breakdown_dimension + "\"" + Groupby_SubspaceKeys + ") AS T WHERE T.\"Inner" + breakdown_dimension + "\" = \"" + inp_filename + "\".\"" + breakdown_dimension + "\")"
+                        tempLineJSON["metrics"][0]["sqlExpression"] = sampleDAvgSQL
+                        tempLineJSON["metrics"][0]["label"] = "SUM(\"" + result[6][0][1] + "\") - (SELECT AVG(T.\"" + result[6][0][1] + "\")"
+                elif result[6][1][0] == "DPrev":
+                    if breakdown_dimension == result[6][1][1]:
+                        Select_SubspaceKeys = ""
+                        Having_SubspaceKeys = ""
+                        for key, value in zip(subspace_keys, subspace_values):
+                            Select_SubspaceKeys += ", \"" + key + "\""
+                            if Having_SubspaceKeys == "":
+                                Having_SubspaceKeys += "HAVING \"" + key + "\" = " + "\'" + value + "\'"
+                            else:
+                                Having_SubspaceKeys += ", \"" + key + "\" = " + "\'" + value + "\'"
+                        sampleDPrevSQL = "(SELECT T.\"DiffPrev\" FROM (SELECT cur.\"" + breakdown_dimension + "\" AS \"Inner" + breakdown_dimension + "\", (cur.\"" + str(result[6][0][1]) + "\" - previous.\"" + str(result[6][0][1]) + "\") AS \"DiffPrev\" FROM (SELECT ROW_NUMBER() OVER(ORDER BY \"" + breakdown_dimension + "\") AS RowNumber, \"" + breakdown_dimension + "\", " + str(result[6][0][0]) +  "(\"" + str(result[6][0][1]) + "\") AS \"" + str(result[6][0][1]) + "\" FROM \"" + inp_filename + "\" GROUP BY \"" + breakdown_dimension + "\"" + Select_SubspaceKeys + Having_SubspaceKeys + ") AS cur LEFT OUTER JOIN (SELECT ROW_NUMBER() OVER(ORDER BY \"" + breakdown_dimension + "\") AS RowNumber, \"" + breakdown_dimension + "\", " + str(result[6][0][0]) +  "(\"" + str(result[6][0][1]) + "\") AS \"" + str(result[6][0][1]) + "\" FROM \"" + inp_filename + "\" GROUP BY \"" + breakdown_dimension + "\"" + Select_SubspaceKeys  + Having_SubspaceKeys + ") previous ON cur.RowNumber = previous.RowNumber + 1) AS T WHERE T.\"Inner" + breakdown_dimension + "\" = \"" + breakdown_dimension + "\")"
+                        tempLineJSON["metrics"][0]["sqlExpression"] = sampleDPrevSQL
+                        tempLineJSON["metrics"][0]["label"] = "T.\"DiffPrev\""
+                    else:
+                        Select_SubspaceKeys = ""
+                        Having_SubspaceKeys = ""
+                        T1_SubspaceKeys = ""
+                        T2_SubspaceKeys = ""
+                        Where_SubspaceKeys = ""
+                        for key, value in zip(subspace_keys, subspace_values):
+                            Select_SubspaceKeys += ", cur.\"" + key + "\" AS \"Inner" + key + "\""
+                            if Having_SubspaceKeys == "":
+                                Having_SubspaceKeys += "HAVING \"" + key + "\" = " + "\'" + value + "\'"
+                            else:
+                                Having_SubspaceKeys += ", \"" + key + "\" = " + "\'" + value + "\'"
+                            if T1_SubspaceKeys == "":
+                                T1_SubspaceKeys += "T1.\"" + key + "\""
+                                T2_SubspaceKeys += "T2.\"" + key + "\""
+                            else:
+                                T1_SubspaceKeys += ", T1.\"" + key + "\""
+                                T2_SubspaceKeys += ", T2.\"" + key + "\""
+                            if Where_SubspaceKeys == "":
+                                Where_SubspaceKeys += "WHERE T.\"Inner" + key + "\" = \'" + value + "\'"
+                            else:
+                                Where_SubspaceKeys += "AND T.\"Inner" + key + "\" = \'" + value + "\'"
+                        sampleDPrevSQL = "(SELECT T.\"DiffPrev\" FROM (SELECT (cur.\"" + str(result[6][0][1]) + "\" - previous.\"" + str(result[6][0][1]) + "\")  AS \"DiffPrev\"" + Select_SubspaceKeys + " FROM (SELECT ROW_NUMBER() OVER(ORDER BY " + T1_SubspaceKeys + ") AS RowNumber, " + T1_SubspaceKeys + ", SUM(T1.\"" + str(result[6][0][1]) + "\") AS \"" + str(result[6][0][1]) + "\" FROM \"" + inp_filename + "\" AS T1 GROUP BY " + T1_SubspaceKeys + ", T1.\"" + breakdown_dimension + "\" HAVING T1.\"" + breakdown_dimension + "\" = \"" + inp_filename + "\".\"" + breakdown_dimension + "\") AS cur LEFT OUTER JOIN (SELECT ROW_NUMBER() OVER(ORDER BY " + T2_SubspaceKeys + ") AS RowNumber, " + T2_SubspaceKeys + ", SUM(T2.\"" + str(result[6][0][1]) + "\") AS \"" + str(result[6][0][1]) + "\" FROM \"" + inp_filename + "\" AS T2 GROUP BY " + T2_SubspaceKeys + ", T2.\"" + breakdown_dimension + "\" HAVING T2.\"" + breakdown_dimension + "\" = \"" + inp_filename + "\".\"" + breakdown_dimension + "\") AS previous ON cur.RowNumber = previous.RowNumber + 1) AS T " + Where_SubspaceKeys + ")"
+                        tempLineJSON["metrics"][0]["sqlExpression"] = sampleDPrevSQL
+                        tempLineJSON["metrics"][0]["label"] = "T.\"DiffPrev\""
+            tempLineJSONStr = json.dumps(tempLineJSON)
+            link = "/testSliceAdder?formData=" + str(quote(tempLineJSONStr)) + "&graphTitle=" + graph_title
             fig = go.Figure(data=go.Scatter(x=x_values[1:], y=y_values[1:]))
             xaxis_title=result[2]
             if len(result[6]) > 1:

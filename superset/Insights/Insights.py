@@ -123,14 +123,16 @@ heap = []
 kTop = 0
 insightInHeap = {}
 maxOneInsPerSub = True
-newImpactCalculation = True
-def Insights(df, tau, k, categorical_attributes, measure_attributes, timeseries_attributes, maxOneInsPerSubAttr, newImpactCalc,limit_search_space, unique_share) :
-    global ubk, heap, kTop, dictionary, catCols, measures, maxOneInsPerSub, timeseriesCols, newImpactCalculation, unique_percent
+newImpactCalculation = False
+wrapImpact = False
+def Insights(df, tau, k, categorical_attributes, measure_attributes, timeseries_attributes, maxOneInsPerSubAttr, newImpactCalc, limit_search_space, unique_share, wrapImpactCalc) :
+    global ubk, heap, kTop, dictionary, catCols, measures, maxOneInsPerSub, timeseriesCols, newImpactCalculation, wrapImpact, unique_percent
     heap = []
     ubk = -1
     kTop = k
     maxOneInsPerSub = maxOneInsPerSubAttr
     newImpactCalculation = newImpactCalc
+    wrapImpact = wrapImpactCalc
     CeCounter = 0
     measures = measure_attributes
     catCols = categorical_attributes
@@ -148,7 +150,7 @@ def Insights(df, tau, k, categorical_attributes, measure_attributes, timeseries_
     print("Preprocessing Done")
 
     if limit_search_space:
-        if unique_share is None or unique_share<=0 or unique_share>=1:
+        if unique_share is None or unique_share<=0 or unique_share>1:
             size = sys.getsizeof(df)
             unique_percent = get_unique_cutoff(size)
             print('Invalid unique percent set')
@@ -251,7 +253,7 @@ def Extract(SG, Ce, measure, dataCube, lookup):
         SDash = copy.deepcopy(SG.Sub)
         SDash[SG.Di] = v
         if tuple(SDash.items()) in dataCube:
-            MDash = RecurExtract(SDash, len(Ce), Ce, measure, dataCube, lookup)
+            MDash = RecurExtract(SDash, SG.Di, len(Ce), Ce, measure, dataCube, lookup)
             if len(Ce) > 1:
                 if tuple(SDash.items()) in MDash:
                     Phi[tuple(SDash.items())] = MDash[tuple(SDash.items())]
@@ -269,7 +271,7 @@ def Extract(SG, Ce, measure, dataCube, lookup):
 
 # %%
 import scipy.stats as ss
-def RecurExtract(S, level, Ce, measure, dataCube, lookup):
+def RecurExtract(S, Di, level, Ce, measure, dataCube, lookup):
     if level > 1:
         Phi = {}
         Dim = Ce[level - 1][1]
@@ -278,7 +280,7 @@ def RecurExtract(S, level, Ce, measure, dataCube, lookup):
             SDash = copy.deepcopy(S)
             SDash[Dim] = v
             if tuple(SDash.items()) in dataCube:
-                MvDash = RecurExtract(SDash, level - 1, Ce, measure, dataCube, lookup)
+                MvDash = RecurExtract(SDash, Di, level - 1, Ce, measure, dataCube, lookup)
                 if level == 2:
                     Phi[tuple(SDash.items())] = MvDash
                 else:
@@ -365,19 +367,27 @@ def Imp(SG, measure, dataCube, lookup, call):
     subspaceWT = 0
     if tuple(SubDash.items()) in dataCube:
         subspaceWT = dataCube[tuple(SubDash.items())][lookup.index(measure)]
-        if not newImpactCalculation or call == "":
+        if not newImpactCalculation:
             if entireSubWT > 0 :
                 answer = subspaceWT / entireSubWT
         else:
-            tempSubDash = copy.deepcopy(SubDash)
-            tempSubDash[call] = "*"
-            wtEntire = 0.5
-            wtParent = 0.5
-            parentWT = 0
-            if tuple(tempSubDash.items()) in dataCube:
-                parentWT = dataCube[tuple(tempSubDash.items())][lookup.index(measure)]
-                if entireSubWT > 0 and parentWT > 0:
-                    answer = wtEntire * (subspaceWT / entireSubWT) + wtParent * (subspaceWT / parentWT)
+            if call == "":
+                answer = 0.8
+            else:
+                tempSubDash = copy.deepcopy(SubDash)
+                tempSubDash[call] = "*"
+                wtEntire = 0.4
+                wtParent = 0.6
+                parentWT = 0
+                if tuple(tempSubDash.items()) in dataCube:
+                    parentWT = dataCube[tuple(tempSubDash.items())][lookup.index(measure)]     
+                    if entireSubWT == parentWT and entireSubWT > 0:
+                        answer = 0.9 * (subspaceWT / entireSubWT)
+                    elif entireSubWT > 0 and parentWT > 0:
+                        answer = wtEntire * (subspaceWT / entireSubWT) + wtParent * (subspaceWT / parentWT)
+    if wrapImpact:
+        if call not in timeseriesCols and (answer < 0.5 and answer >= 0.1):
+            answer = 1 - answer
     return round(answer, 2)
 
 
