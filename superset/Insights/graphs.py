@@ -132,14 +132,39 @@ def generate_graphs(results,categorical_index,k,corr_fig,filename,datasource_id)
             # if last composite extractor is % then display as pie chart only for On and O1
             if result[6][len(result[6])-1][0]=='%':
                 tempPieJSON = copy.deepcopy(samplePieJSON)
-                if len(result[6]) == 1:
-                    tempPieJSON["datasource"] = str(datasource_id)
-                    tempPieJSON["groupby"].append(str(result[2]))
-                    tempPieJSON["metrics"][0]["sqlExpression"] = str(result[6][0][0]) + "(\"" + str(result[6][0][1]) + "\")"
-                    tempPieJSON["metrics"][0]["label"] = str(result[6][0][0]) + "(\"" + str(result[6][0][1]) + "\")"
-                    tempPieJSON["adhoc_filters"] = adhocFilterList
-                    tempPieJSONStr = json.dumps(tempPieJSON)
-                    link = "/testSliceAdder?formData=" + str(quote(tempPieJSONStr)) + "&graphTitle=" + graph_title
+                tempPieJSON["datasource"] = str(datasource_id)
+                tempPieJSON["groupby"].append(str(result[2]))
+                tempPieJSON["adhoc_filters"] = adhocFilterList
+                if len(result[6]) == 1:    
+                    tempPieJSON["metric"]["sqlExpression"] = str(result[6][0][0]) + "(\"" + str(result[6][0][1]) + "\")"
+                    tempPieJSON["metric"]["label"] = str(result[6][0][0]) + "(\"" + str(result[6][0][1]) + "\")"
+                else:
+                    if breakdown_dimension == result[6][1][1]:
+                        Select_SubspaceKeys = ""
+                        Groupby_SubspaceKeys = ""
+                        Where_SubspaceKeys = ""
+                        for key, value in zip(subspace_keys, subspace_values):
+                            Select_SubspaceKeys += ", T1.\"" + key + "\" as \"Inner" + key + "\""
+                            Groupby_SubspaceKeys += ", T1.\"" + key + "\""
+                            if Where_SubspaceKeys == "":
+                                Where_SubspaceKeys += "WHERE T.\"Inner" + key + "\" = \'" + value + "\'"
+                            else:
+                                Where_SubspaceKeys += "AND T.\"Inner" + key + "\" = \'" + value + "\'"
+                        samplePercentSQL = "(" + str(result[6][0][0]) + "(\"" + result[6][0][1] + "\") * 100) / (SELECT SUM(T.\"" + result[6][0][1] + "\") FROM (SELECT T1.\"" + breakdown_dimension + "\" as \"" + breakdown_dimension + "\"" + Select_SubspaceKeys + ", " + str(result[6][0][0]) +  "(T1.\"" + result[6][0][1] + "\") as \"" + result[6][0][1] + "\" FROM \"" + inp_filename + "\" AS T1 GROUP BY T1.\"" + breakdown_dimension + "\"" + Groupby_SubspaceKeys + ") AS T " + Where_SubspaceKeys + ")"
+                        tempPieJSON["metric"]["sqlExpression"] = samplePercentSQL
+                        tempPieJSON["metric"]["label"] = str(result[6][0][0]) + "(\"" + str(result[6][0][1]) + "\") - (SELECT SUM(T.\"" + str(result[6][0][1]) + "\")"
+                    else:
+                        Select_SubspaceKeys = ""
+                        Groupby_SubspaceKeys = ""
+                        Where_SubspaceKeys = ""
+                        for key, value in zip(subspace_keys, subspace_values):
+                            Select_SubspaceKeys += ", T1.\"" + key + "\" as \"Inner" + key + "\""
+                            Groupby_SubspaceKeys += ", T1.\"" + key + "\""
+                        samplePercentSQL = "(" + str(result[6][0][0]) + "(\"" + result[6][0][1] + "\") * 100) / (SELECT SUM(T.\"" + result[6][0][1] + "\") FROM (SELECT T1.\"" + breakdown_dimension + "\" as \"Inner" + breakdown_dimension + "\"" + Select_SubspaceKeys + ", " + str(result[6][0][0]) +  "(T1.\"" + result[6][0][1] + "\") as \"" + result[6][0][1] + "\" FROM \"" + inp_filename + "\" AS T1 GROUP BY T1.\"" + breakdown_dimension + "\"" + Groupby_SubspaceKeys + ") AS T WHERE T.\"Inner" + breakdown_dimension + "\" = \"" + inp_filename + "\".\"" + breakdown_dimension + "\")"
+                        tempPieJSON["metric"]["sqlExpression"] = samplePercentSQL
+                        tempPieJSON["metric"]["label"] = str(result[6][0][0]) + "(\"" + result[6][0][1] + "\") - (SELECT SUM(T.\"" + result[6][0][1] + "\")"
+                tempPieJSONStr = json.dumps(tempPieJSON)
+                link = "/testSliceAdder?formData=" + str(quote(tempPieJSONStr)) + "&graphTitle=" + graph_title
                 pull_arr = [0] * len(x_values)
                 pull_arr[outstanding_index] = 0.1
                 fig = go.Figure(data=[go.Pie(labels=x_values, values=y_values,pull=pull_arr)])

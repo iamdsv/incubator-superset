@@ -466,7 +466,7 @@ class SqlaTable(Model, BaseDatasource):
         form_data = request.args.get("formData")
         graph_title = request.args.get("graphTitle")
         extra_data = "action=saveas&slice_id=87&slice_name=" + str(graph_title) + "&add_to_dash=noSave&goto_dash=false&custom_create=Yes"
-        url = "http://localhost:8088/superset/explore/?form_data=" + str(form_data) + "&" + extra_data
+        url = "http://localhost:8088/superset/explore?form_data=" + str(form_data) + "&" + extra_data
         return redirect(url)
     
     @app.route('/uploadConfig', methods = ['GET', 'POST'])
