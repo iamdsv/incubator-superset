@@ -33,6 +33,8 @@ def generateDictionary(df, catVar):
         uniqueList = df[cat].unique().tolist()
         print(uniqueList)
         strList = [str(el) for el in uniqueList]
+        # lambda x,strList: 
+        strList = ['Blank' if x == 'nan' else x for x in strList]
         dictionary[cat] = strList
     return dictionary
 
@@ -48,7 +50,7 @@ def generateDataCube(df, categoricalCols, measures, timeseriesCols):
     allCols = df.columns
     catCols = categoricalCols 
     OrdinalCols = timeseriesCols
-    allSubs = getAllSubsets(catCols, 2)
+    allSubs = getAllSubsets(catCols, 3)
     allCols = categoricalCols + measures
     calls = [df]
     for el in allSubs:
@@ -64,32 +66,34 @@ def generateDataCube(df, categoricalCols, measures, timeseriesCols):
             allCategoricalValues = []
             for measure in measures:
                 allMeasuresValues.append(c.sum()[measure].tolist())
-            countFrame = c.nunique()
+            countFrame = c.count()
             for cat in catCols:
                 allCategoricalValues.append(countFrame[cat].tolist() if cat in countFrame.columns else [0] * len(countFrame))
-            for ind in range(len(allMeasuresValues[0])):
-                inner_dict = {}
-                for cols in allCols:
-                    if cols in groupNames:
-                        inner_dict[cols] = str(diction[cols + 'List'][ind])
-                    else:
-                        inner_dict[cols] = "*"
-                dataCube[tuple(inner_dict.items())] = [row[ind] for row in allMeasuresValues]
-            for ind in range(len(allCategoricalValues[0])):
-                inner_dict = {}
-                for cols in allCols:
-                    if cols in groupNames:
-                        inner_dict[cols] = str(diction[cols + 'List'][ind])
-                    else:
-                        inner_dict[cols] = "*"
-                dataCubeCount[tuple(inner_dict.items())] = [row[ind] for row in allCategoricalValues]
+            if len(allMeasuresValues) > 0:
+                for ind in range(len(allMeasuresValues[0])):
+                    inner_dict = {}
+                    for cols in allCols:
+                        if cols in groupNames:
+                            inner_dict[cols] = str(diction[cols + 'List'][ind])
+                        else:
+                            inner_dict[cols] = "*"
+                    dataCube[tuple(inner_dict.items())] = [row[ind] for row in allMeasuresValues]
+            if len(allCategoricalValues) > 0:
+                for ind in range(len(allCategoricalValues[0])):
+                    inner_dict = {}
+                    for cols in allCols:
+                        if cols in groupNames:
+                            inner_dict[cols] = str(diction[cols + 'List'][ind])
+                        else:
+                            inner_dict[cols] = "*"
+                    dataCubeCount[tuple(inner_dict.items())] = [row[ind] for row in allCategoricalValues]
         else:
             inner_dict = {}
             allMeasuresValues = []
             allCategoricalValues = []
             for measure in measures:
                 allMeasuresValues.append(c.sum()[measure])
-            countFrame = c.nunique()
+            countFrame = c.count()
             for cat in catCols:
                 allCategoricalValues.append(countFrame[cat])
             for cols in allCols:
@@ -113,12 +117,40 @@ def generateDataCube(df, categoricalCols, measures, timeseriesCols):
 
 # %%
 CeAll = []
+# getIndexCe = {'%': 0, 'DAvg': 1, 'DPrev': 2, '%Change': 3}
 getIndexCe = {'%': 0, 'DAvg': 1, 'DPrev': 2}
+# getIndexCe = {'%Change': 3}
 Taxonomy = [[False, False, True, True],
         [False, False, False, True],
+        [False, False, True, False],
         [False, False, True, False]]
-def getCeAll(measures, catCols, maxLevels) :
-    CeFirstLevel = []
+
+extractorList = ["DPrev", "%Change"]
+
+def getCeAll(measures, catCols, maxLevels,user_configured_extractors) :
+    
+    print('user configured extractors are ',user_configured_extractors)
+    index_counter = len(getIndexCe)
+
+    if user_configured_extractors!=None:
+
+        # Nominal extractors
+        if len(user_configured_extractors)>=1 and user_configured_extractors[0]!=None and len(user_configured_extractors[0])>0:
+            for counter in range(0,len(user_configured_extractors[0])):
+                getIndexCe[str(user_configured_extractors[0][counter])] = index_counter
+                index_counter = index_counter + 1
+
+
+        if len(user_configured_extractors)==2 and user_configured_extractors[1]!=None and len(user_configured_extractors[1])>0:
+            extractorList.append(user_configured_extractors[1])
+            for counter in range(0,len(user_configured_extractors[1])):
+                getIndexCe[str(user_configured_extractors[0][counter])] = index_counter
+                index_counter = index_counter + 1
+
+    
+    print('Updated extractors are ' ,getIndexCe)
+
+    CeFirstLevel = [['Count', '*']]
     extractors = ['Sum', 'Count']
     forMeasure = ['Sum']
     forCat = ['Count']
@@ -130,7 +162,7 @@ def getCeAll(measures, catCols, maxLevels) :
             for cat in catCols:
                 if cat not in OrdinalCols:
                     CeFirstLevel.append([str(extractor), str(cat)])
-    CeAll.clear()
+    CeAll.clear()    
     for Ce in CeFirstLevel:
         CeAll.append([Ce])
     generateCeAll(CeFirstLevel, catCols, 2, maxLevels)
@@ -146,7 +178,7 @@ def generateCeAll(levelCe, catCols, level, maxLevels):
         for catVars in catCols:
             for Ce in getIndexCe:
                 if levCe[0] != "Count":
-                    if ((str(Ce) !=  "DPrev") or (str(catVars) in OrdinalCols)):
+                    if ((str(Ce) not in extractorList) or (str(catVars) in OrdinalCols)):
                         if level == 2:
                             newLevelCe.append([levCe, [str(Ce), str(catVars)]])
                         else :

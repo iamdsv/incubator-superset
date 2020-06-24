@@ -12,6 +12,7 @@ import pandas as pd
 import superset.Insights.reqGenerator as req
 import sys
 import numpy as np
+import os
 np.seterr(divide='ignore', invalid='ignore')
 # df = pd.read_excel('CarSales_Tables.xlsx')
 # df['Year'] = pd.to_datetime(df['Year'], format='%Y-%m-%d %H:%M:%S')
@@ -30,23 +31,65 @@ TotalSub = {}
 InsightTypesAll = ['O1', 'On', 'Trend']
 PI = ['O1', 'On']
 SI = ['Trend']
-
+user_configured_extractors = []
+counter = 0
+ubk = 0
+heap = []
+kTop = 0
+insightInHeap = {}
+maxOneInsPerSub = False
+newOneInsPerSub = False
+newImpactCalculation = False
+wrapImpact = False
 unique_percent = 1
 
-# TODO : Change logic to  accodmadate the difference between the base and value of the size
+
+def setup_user_defined_extractors(extractors):
+    user_configured_ordinal_extractors = []
+    user_configured_nominal_extractors = []
+
+    for i in range(0,len(extractors)):
+
+        extractor_name = extractors[i][0]
+        is_ordinal = extractors[i][1]
+        extractor_expression = extractors[i][2]
+        extractor_description = extractors[i][3]
+        print(extractors[i])
+
+
+        # lambda expression construction 
+        user_defined_extractor = str(extractor_name) + " = " + str(extractor_expression)
+        try:
+            exec(user_defined_extractor,globals())
+        except:
+            print('Exec for the extractor failed',extractor_name)
+            continue
+
+        if is_ordinal:
+            user_configured_ordinal_extractors.append(str(extractor_name))
+        else:
+            user_configured_nominal_extractors.append(str(extractor_name))
+
+    return [user_configured_nominal_extractors,user_configured_ordinal_extractors]
+
+# TODO : Change logic to  accommodate the difference between the base and value of the size
 def get_unique_cutoff(size):
     
     factor = 1
 
-    if size<=200000:
+    if size<=500000:
+        # 500kb
         print('Not truncating due to small size')
-    elif size<=500000:
+    elif size<=1000000:
+        # 1000kb
         factor = 0.8
-    elif size<=700000:
-        factor = 80    
-    elif size<=800000:
+    elif size<=1500000:
+        # 1500kb
+        factor = 0.6    
+    elif size<=2000000:
         factor = 0.4
     else:
+        # 2000kb
         factor = 0.2
     return factor
 
@@ -84,6 +127,10 @@ class SiblingGroup:
 def isValid(SG, Ce) :
     S = SG.Sub
     Da = SG.Di
+    if newOneInsPerSub:
+        if len(Ce) == 2:
+            if str(Ce[1][1]) == str(Da):
+                return False
     if len(Ce) == 1 :
         return True
     for ext in Ce[1:]:
@@ -93,7 +140,7 @@ def isValid(SG, Ce) :
 
 
 # %%
-def getImpactOrderList(S, dictionary, Di, measure, dataCube, lookup, call) :
+def getImpactOrderList(S, dictionary, Di, measure, dataCube, lookup, call, depth) :
     global unique_percent
     STemp = copy.deepcopy(S)
     ImpactList = []
@@ -103,7 +150,7 @@ def getImpactOrderList(S, dictionary, Di, measure, dataCube, lookup, call) :
     for v in dictionary[Di] :
         STemp[Di] = v
         SibG = SiblingGroup(STemp, Di)
-        ImpactList.append(Imp(SibG, measure, dataCube, lookup, call))
+        ImpactList.append(Imp(SibG, measure, dataCube, lookup, call, depth))
     return [x for y, x in sorted(zip(ImpactList, dictionary[Di]), reverse = True)][0:n_values]
         
 
@@ -117,20 +164,13 @@ def getOrderedCatCols(catCols, dictionary) :
 
 
 # %%
-counter = 0
-ubk = 0
-heap = []
-kTop = 0
-insightInHeap = {}
-maxOneInsPerSub = True
-newImpactCalculation = False
-wrapImpact = False
-def Insights(df, tau, k, categorical_attributes, measure_attributes, timeseries_attributes, maxOneInsPerSubAttr, newImpactCalc, limit_search_space, unique_share, wrapImpactCalc) :
-    global ubk, heap, kTop, dictionary, catCols, measures, maxOneInsPerSub, timeseriesCols, newImpactCalculation, wrapImpact, unique_percent
+def Insights(df, tau, k, categorical_attributes, measure_attributes, timeseries_attributes, maxOneInsPerSubAttr, newImpactCalc, limit_search_space, unique_share, wrapImpactCalc,newOneInsPerSubAttr,user_defined_extractors,filename) :
+    global ubk, heap, kTop, dictionary, catCols, measures, maxOneInsPerSub, newOneInsPerSub, timeseriesCols, newImpactCalculation, wrapImpact, unique_percent,user_configured_extractors
     heap = []
     ubk = -1
     kTop = k
     maxOneInsPerSub = maxOneInsPerSubAttr
+    newOneInsPerSub = newOneInsPerSubAttr
     newImpactCalculation = newImpactCalc
     wrapImpact = wrapImpactCalc
     CeCounter = 0
@@ -149,33 +189,40 @@ def Insights(df, tau, k, categorical_attributes, measure_attributes, timeseries_
     print("Ordered Categorical Columns")
     print("Preprocessing Done")
 
+    print('Setting up the extractors')
+    user_configured_extractors = setup_user_defined_extractors(user_defined_extractors)
+    print(user_configured_extractors)
+    # print(dictionary)
+    # print(dataCubeCount)
     if limit_search_space:
         if unique_share is None or unique_share<=0 or unique_share>1:
-            size = sys.getsizeof(df)
+            size = os.path.getsize(filename)
+            print('size of data is ',size)
             unique_percent = get_unique_cutoff(size)
-            print('Invalid unique percent set')
+            print(unique_share,'Invalid unique percent set')
         else:
             unique_percent = unique_share
     print(str(unique_percent * 100), '% Unique values will be used for insight generation')
     dim = len(allCols)
     dimCatCols = len(catCols)
-    CeAll = req.getCeAll(measures, catCols, tau)
-    # print(CeAll)
+    CeAll = req.getCeAll(measures, catCols, tau,user_configured_extractors)
     for cols in allCols:
         TotalSub[str(cols)] = "*"
     progressBar(CeCounter, len(CeAll))
+    print(orderedCatCols)
     for Ce in CeAll :
         for i in range(dimCatCols) :
             Subs = Subspace(dim, allCols)
             useDataCube = {}
             lookup = []
+            # print(Ce, measures, Ce[0][1] in catCols)
             if Ce[0][1] in measures:
                 useDataCube = dataCube
                 lookup = measures
-            elif Ce[0][1] in catCols: 
+            elif Ce[0][1] in catCols or Ce[0][1] == '*': 
                 useDataCube = dataCubeCount
                 lookup = catCols
-            EnumerateInsight(Subs.S, orderedCatCols[i], Ce, Ce[0][1], useDataCube, 0, lookup, "")
+            EnumerateInsight(Subs.S, orderedCatCols[i], Ce, lookup[0] if Ce[0][1] == '*' else Ce[0][1], useDataCube, 0, lookup, "")
         CeCounter += 1
         progressBar(CeCounter, len(CeAll))
     return heap
@@ -191,13 +238,15 @@ def EnumerateInsight(S, Di, Ce, measure, dataCube, depth, lookup, call) :
     STemp = copy.deepcopy(S)
     SibG = SiblingGroup(STemp, Di)
     if isValid(SibG, Ce):
-        if ubk <= Imp(SibG, measure, dataCube, lookup, call) or (len(heap) < kTop) :
+        if ubk <= Imp(SibG, measure, dataCube, lookup, call, depth) or (len(heap) < kTop) :
             Phi,Phi_Index,dim_xvalues,dim_yvalues = Extract(SibG, Ce, measure, dataCube, lookup)
             for inType in InsightTypesAll:
-                Score = Imp(SibG, measure, dataCube, lookup, call)*Sig(Phi, inType, SibG.Di)
+                Score = Imp(SibG, measure, dataCube, lookup, call, depth)*Sig(Phi, inType, SibG.Di)
                 if math.isnan(Score):
                     Score = 0.0
                 Score = round(Score, 2)
+                # if Score > 0.0:
+                #     print(Score)
                 if ((Score > ubk) or (len(heap) < kTop)) and len(Phi) > 0 and Score > 0.0:
                     outputList = []
                     if(len(heap) == kTop):
@@ -231,7 +280,7 @@ def EnumerateInsight(S, Di, Ce, measure, dataCube, depth, lookup, call) :
 
     if depth == 2:
         return True
-    highImpactList = getImpactOrderList(S, dictionary, Di, measure, dataCube, lookup, call)
+    highImpactList = getImpactOrderList(S, dictionary, Di, measure, dataCube, lookup, call, depth)
     for v in highImpactList:
         SDash = copy.deepcopy(S)
         SDash[Di] = v
@@ -351,6 +400,37 @@ def RecurExtract(S, Di, level, Ce, measure, dataCube, lookup):
                     continue
                 MDash[tuple(TempS.items())] = float(Phi[entry]) - float(Phi[prevEntry])
                 prevEntry = entry
+        elif CeLocal == "%Change":
+            prevEntry = {}
+            for entry in Phi:
+                TempS = dict((x, y) for x, y in entry)
+                if(prevEntry == {}) :
+                    prevEntry = entry
+                    MDash[tuple(TempS.items())] = -9999
+                    continue
+                if float(Phi[prevEntry]) > 0:
+                    MDash[tuple(TempS.items())] = ((float(Phi[entry]) - float(Phi[prevEntry])) / float(Phi[prevEntry])) * 100
+                else:
+                    MDash[tuple(TempS.items())] = 0
+                prevEntry = entry
+        else:
+            keyList = []
+            valueList = []
+            updated_value_list = []
+            avgList = []
+            for entry in Phi:
+                TempS = dict((x, y) for x, y in entry)
+                keyList.append(tuple(TempS.items()))
+                valueList.append(float(Phi[entry]))
+
+            if len(keyList) > 0:
+                for value in valueList:
+                    # updated_value_list.append(value)
+                    updated_value_list.append(eval(CeLocal)(value,valueList))
+
+            for key, val in zip(keyList, updated_value_list):
+                    MDash[key] = val
+
     else:
         if tuple(S.items()) in dataCube:
             MDash = dataCube[tuple(S.items())][lookup.index(measure)]
@@ -358,9 +438,8 @@ def RecurExtract(S, Di, level, Ce, measure, dataCube, lookup):
             MDash = 0
     return MDash
 
-
 # %%
-def Imp(SG, measure, dataCube, lookup, call):
+def Imp(SG, measure, dataCube, lookup, call, depth):
     SubDash = SG.Sub
     answer = 0
     entireSubWT = dataCube[tuple(TotalSub.items())][lookup.index(measure)]
@@ -372,7 +451,7 @@ def Imp(SG, measure, dataCube, lookup, call):
                 answer = subspaceWT / entireSubWT
         else:
             if call == "":
-                answer = 0.8
+                answer = 1
             else:
                 tempSubDash = copy.deepcopy(SubDash)
                 tempSubDash[call] = "*"
@@ -382,7 +461,7 @@ def Imp(SG, measure, dataCube, lookup, call):
                 if tuple(tempSubDash.items()) in dataCube:
                     parentWT = dataCube[tuple(tempSubDash.items())][lookup.index(measure)]     
                     if entireSubWT == parentWT and entireSubWT > 0:
-                        answer = 0.9 * (subspaceWT / entireSubWT)
+                        answer = (subspaceWT / entireSubWT)
                     elif entireSubWT > 0 and parentWT > 0:
                         answer = wtEntire * (subspaceWT / entireSubWT) + wtParent * (subspaceWT / parentWT)
     if wrapImpact:
